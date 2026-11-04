@@ -182,7 +182,8 @@ impl From<&[LocalPrinter]> for LocalPrintersDto {
 }
 
 /// A user-configured custom paper size shown in the sharing settings.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CustomMediaDto {
     /// Human-readable name shown in the UI; also used to identify the entry.
     pub label: String,
