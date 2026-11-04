@@ -43,7 +43,7 @@ pub use queue_installation::{
 };
 pub use runtime::{RuntimeService, ServiceContext, ServiceReporter, Shutdown};
 pub use setup::{ElevationBroker, Setup, SetupOutcome};
-pub use sharing::{LocalPrinter, Sharing};
+pub use sharing::{CustomMedia, LocalPrinter, Sharing};
 pub use startup::{Startup, StartupRegistration, StartupStatus};
 pub use troubleshooting::{
     LocalFinding, LocalQueueInspection, LocalTroubleshooting, LocalTroubleshootingSnapshot,

@@ -12,10 +12,10 @@ use crate::domain::{ErrorCode, PrintFailure, PrinterName};
 
 use super::protocol::{
     job_attributes_response, job_response, jobs_response, managed_job_response, percent_decode,
-    percent_encode, response, JobEntry, PrinterEntry, Request, Status, IPP_VERSION_1_1,
-    OPERATION_CANCEL_JOB, OPERATION_CREATE_JOB, OPERATION_GET_JOBS, OPERATION_GET_JOB_ATTRIBUTES,
-    OPERATION_GET_PRINTERS, OPERATION_GET_PRINTER_ATTRIBUTES, OPERATION_PRINT_JOB,
-    OPERATION_SEND_DOCUMENT, OPERATION_VALIDATE_JOB,
+    percent_encode, response, response_with_media, JobEntry, PrinterEntry, Request, Status,
+    IPP_VERSION_1_1, OPERATION_CANCEL_JOB, OPERATION_CREATE_JOB, OPERATION_GET_JOBS,
+    OPERATION_GET_JOB_ATTRIBUTES, OPERATION_GET_PRINTERS, OPERATION_GET_PRINTER_ATTRIBUTES,
+    OPERATION_PRINT_JOB, OPERATION_SEND_DOCUMENT, OPERATION_VALIDATE_JOB,
 };
 
 use crate::adapters::ipps::NetworkChannel;
@@ -288,22 +288,31 @@ fn answer_with_job_status(
                 .iter()
                 .map(|name| entry(host, name, accepting_jobs))
                 .collect();
-            response(request_id, version, Status::Ok, &printers)
+            let custom_media = shared.custom_media();
+            response_with_media(
+                request_id,
+                version,
+                Status::Ok,
+                &printers,
+                &custom_media,
+            )
         }
         OPERATION_GET_PRINTER_ATTRIBUTES => {
-            let shared = shared.shared_printers();
+            let custom_media = shared.custom_media();
+            let printers = shared.shared_printers();
             let selected = match request.value("printer-uri") {
-                Some(uri) => find_by_uri(&shared, host, uri),
+                Some(uri) => find_by_uri(&printers, host, uri),
                 None => request
                     .value("printer-name")
-                    .and_then(|name| find_by_name(&shared, name)),
+                    .and_then(|name| find_by_name(&printers, name)),
             };
             match selected {
-                Some(name) => response(
+                Some(name) => response_with_media(
                     request_id,
                     version,
                     Status::Ok,
                     &[entry(host, name, accepting_jobs)],
+                    &custom_media,
                 ),
                 None => response(request_id, version, Status::NotFound, &[]),
             }

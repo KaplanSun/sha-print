@@ -844,7 +844,18 @@ pub fn response(
     status: Status,
     printers: &[PrinterEntry],
 ) -> Vec<u8> {
-    build_response(request_id, version, status, printers, false)
+    response_with_media(request_id, version, status, printers, &[])
+}
+
+/// Builds a printer-attributes response that additionally advertises user-configured custom sizes.
+pub fn response_with_media(
+    request_id: u32,
+    version: (u8, u8),
+    status: Status,
+    printers: &[PrinterEntry],
+    custom_media: &[crate::adapters::printers::media::AdvertisedMedia],
+) -> Vec<u8> {
+    build_response(request_id, version, status, printers, false, custom_media)
 }
 
 pub fn legacy_zero_margin_response(
@@ -853,7 +864,18 @@ pub fn legacy_zero_margin_response(
     status: Status,
     printers: &[PrinterEntry],
 ) -> Vec<u8> {
-    build_response(request_id, version, status, printers, true)
+    legacy_zero_margin_response_with_media(request_id, version, status, printers, &[])
+}
+
+/// Legacy zero-margin variant that additionally advertises user-configured custom sizes.
+pub fn legacy_zero_margin_response_with_media(
+    request_id: u32,
+    version: (u8, u8),
+    status: Status,
+    printers: &[PrinterEntry],
+    custom_media: &[crate::adapters::printers::media::AdvertisedMedia],
+) -> Vec<u8> {
+    build_response(request_id, version, status, printers, true, custom_media)
 }
 
 fn build_response(
@@ -862,8 +884,10 @@ fn build_response(
     status: Status,
     printers: &[PrinterEntry],
     legacy_zero_margin: bool,
+    custom_media: &[crate::adapters::printers::media::AdvertisedMedia],
 ) -> Vec<u8> {
     let mut out = response_start(request_id, version, status, 256 + printers.len() * 4096);
+    let catalog = crate::adapters::printers::media::advertised_catalog(custom_media);
     for printer in printers {
         out.push(tag::PRINTER_ATTRIBUTES);
         // `printer-uri` is an operation attribute in a request; a printer attributes group is
@@ -891,10 +915,7 @@ fn build_response(
             &["image/pwg-raster"],
         );
         write_text(&mut out, tag::KEYWORD, "media-default", "iso_a4_210x297mm");
-        let supported_media: Vec<&str> = crate::adapters::printers::media::MEDIA_CATALOG
-            .iter()
-            .map(|media| media.keyword)
-            .collect();
+        let supported_media: Vec<&str> = catalog.iter().map(|media| media.keyword.as_str()).collect();
         write_texts(&mut out, tag::KEYWORD, "media-supported", &supported_media);
         write_texts(&mut out, tag::KEYWORD, "media-ready", &supported_media);
         let margins: &[i32] = if legacy_zero_margin {
@@ -933,13 +954,13 @@ fn build_response(
             write_media_collection(
                 &mut out,
                 "media-col-default",
-                &crate::adapters::printers::media::MEDIA_CATALOG[0],
+                &crate::adapters::printers::media::AdvertisedMedia::from_spec(&crate::adapters::printers::media::MEDIA_CATALOG[0]),
                 BORDERLESS_MARGIN_HUNDREDTHS_MM,
             );
         } else {
             write_media_col_default(
                 &mut out,
-                &crate::adapters::printers::media::MEDIA_CATALOG[0],
+                &crate::adapters::printers::media::AdvertisedMedia::from_spec(&crate::adapters::printers::media::MEDIA_CATALOG[0]),
             );
         }
         write_texts(
@@ -956,14 +977,11 @@ fn build_response(
             ],
         );
         if legacy_zero_margin {
-            write_media_col_database_zero_margin(
-                &mut out,
-                crate::adapters::printers::media::MEDIA_CATALOG,
-            );
+            write_media_col_database_zero_margin(&mut out, &catalog);
         } else {
-            write_media_col_database(&mut out, crate::adapters::printers::media::MEDIA_CATALOG);
+            write_media_col_database(&mut out, &catalog);
         }
-        write_media_size_supported(&mut out, crate::adapters::printers::media::MEDIA_CATALOG);
+        write_media_size_supported(&mut out, &catalog);
         write_text(&mut out, tag::KEYWORD, "sides-default", "one-sided");
         write_texts(
             &mut out,
@@ -1242,7 +1260,7 @@ fn write_name_and_value(out: &mut Vec<u8>, name: &str, value: &[u8]) {
 
 fn write_media_col_database(
     out: &mut Vec<u8>,
-    specs: &[crate::adapters::printers::media::MediaSpec],
+    specs: &[crate::adapters::printers::media::AdvertisedMedia],
 ) {
     let mut is_first = true;
     for spec in specs {
@@ -1263,7 +1281,7 @@ fn write_media_col_database(
 
 fn write_media_col_database_zero_margin(
     out: &mut Vec<u8>,
-    specs: &[crate::adapters::printers::media::MediaSpec],
+    specs: &[crate::adapters::printers::media::AdvertisedMedia],
 ) {
     for (index, spec) in specs.iter().enumerate() {
         write_media_collection(
@@ -1275,7 +1293,7 @@ fn write_media_col_database_zero_margin(
     }
 }
 
-fn write_media_col_default(out: &mut Vec<u8>, spec: &crate::adapters::printers::media::MediaSpec) {
+fn write_media_col_default(out: &mut Vec<u8>, spec: &crate::adapters::printers::media::AdvertisedMedia) {
     write_media_collection(
         out,
         "media-col-default",
@@ -1287,7 +1305,7 @@ fn write_media_col_default(out: &mut Vec<u8>, spec: &crate::adapters::printers::
 fn write_media_collection(
     out: &mut Vec<u8>,
     name: &str,
-    spec: &crate::adapters::printers::media::MediaSpec,
+    spec: &crate::adapters::printers::media::AdvertisedMedia,
     margin_hundredths_mm: i32,
 ) {
     out.push(tag::BEG_COLLECTION);
@@ -1295,7 +1313,7 @@ fn write_media_collection(
     write_text(out, tag::MEMBER_ATTR_NAME, "", "media-size");
     write_media_size(out, "", spec);
     write_text(out, tag::MEMBER_ATTR_NAME, "", "media-size-name");
-    write_text(out, tag::KEYWORD, "", spec.keyword);
+    write_text(out, tag::KEYWORD, "", spec.keyword.as_str());
     for margin in [
         "media-bottom-margin",
         "media-top-margin",
@@ -1312,7 +1330,7 @@ fn write_media_collection(
 fn write_media_size(
     out: &mut Vec<u8>,
     name: &str,
-    spec: &crate::adapters::printers::media::MediaSpec,
+    spec: &crate::adapters::printers::media::AdvertisedMedia,
 ) {
     out.push(tag::BEG_COLLECTION);
     write_name_and_value(out, name, &[]);
@@ -1329,7 +1347,7 @@ fn write_media_size(
 
 fn write_media_size_supported(
     out: &mut Vec<u8>,
-    specs: &[crate::adapters::printers::media::MediaSpec],
+    specs: &[crate::adapters::printers::media::AdvertisedMedia],
 ) {
     for (index, spec) in specs.iter().enumerate() {
         write_media_size(
@@ -1754,13 +1772,45 @@ mod tests {
                 STANDARD_MARGIN_HUNDREDTHS_MM,
                 BORDERLESS_MARGIN_HUNDREDTHS_MM,
             ] {
+                let advertised =
+                    crate::adapters::printers::media::AdvertisedMedia::from_spec(spec);
                 let mut bytes = vec![2, 0, 0, 2, 0, 0, 0, 3, tag::JOB_ATTRIBUTES];
-                write_media_collection(&mut bytes, "media-col", spec, margin);
+                write_media_collection(&mut bytes, "media-col", &advertised, margin);
                 bytes.push(tag::END_OF_ATTRIBUTES);
                 let parsed = Request::parse(&bytes).expect("valid collection");
-                assert_eq!(parsed.media().unwrap().as_deref(), Some(spec.keyword));
+                assert_eq!(
+                    parsed.media().unwrap().as_deref(),
+                    Some(advertised.keyword.as_str())
+                );
             }
         }
+    }
+
+    #[test]
+    fn custom_media_are_advertised_alongside_the_builtin_catalog() {
+        use crate::adapters::printers::media::AdvertisedMedia;
+        let bytes = response_with_media(
+            11,
+            IPP_VERSION_2_0,
+            Status::Ok,
+            &[PrinterEntry {
+                name: "LaserJet".to_owned(),
+                uri: "ipps://server:8631/ipp/print/LaserJet".to_owned(),
+                accepting_jobs: true,
+            }],
+            &[AdvertisedMedia::custom(1000, 1500), AdvertisedMedia::custom(3302, 4500)],
+        );
+        let attributes = decode(&bytes);
+        let supported = texts(&attributes, "media-supported");
+        assert!(supported.contains(&"custom_100x150mm".to_string()));
+        assert!(supported.contains(&"custom_330.2x450mm".to_string()));
+        // Built-ins are still present.
+        assert!(supported.contains(&"iso_a4_210x297mm".to_string()));
+        // Default media is untouched.
+        assert_eq!(
+            text(&attributes, "media-default"),
+            Some("iso_a4_210x297mm".to_owned())
+        );
     }
 
     fn integers(attributes: &[Decoded], name: &str) -> Vec<i32> {

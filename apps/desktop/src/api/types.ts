@@ -109,6 +109,21 @@ export interface LocalPrinters {
   printers: LocalPrinter[];
 }
 
+/** A user-configured custom paper size advertised to clients. */
+export interface CustomMedia {
+  /** Human-readable name; also identifies the entry. */
+  label: string;
+  /** Width in tenths of a millimetre. */
+  widthTenthsMm: number;
+  /** Height in tenths of a millimetre. */
+  heightTenthsMm: number;
+}
+
+/** Every configured custom paper size. */
+export interface CustomMediaList {
+  media: CustomMedia[];
+}
+
 /** The server identity a client user approves, and where clients connect. */
 export interface ServerIdentity {
   /** Uppercase, colon-separated SHA-256 fingerprint of the server certificate. */

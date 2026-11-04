@@ -10,6 +10,8 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 import type {
   ControlMode,
+  CustomMedia,
+  CustomMediaList,
   DiagnosticsReport,
   LocalPrinters,
   RuntimeStatus,
@@ -39,6 +41,21 @@ export function listLocalPrinters(): Promise<LocalPrinters> {
 /** Replaces the shared printer selection; resolves with the local queues and their new state. */
 export function setSharedPrinters(printers: string[]): Promise<LocalPrinters> {
   return invoke<LocalPrinters>("set_shared_printers", { printers });
+}
+
+/** Lists the user-configured custom paper sizes advertised to clients. */
+export function listCustomMedia(): Promise<CustomMediaList> {
+  return invoke<CustomMediaList>("list_custom_media");
+}
+
+/** Adds a custom paper size; resolves with the resulting list. */
+export function addCustomMedia(media: CustomMedia): Promise<CustomMediaList> {
+  return invoke<CustomMediaList>("add_custom_media", { media });
+}
+
+/** Removes a custom paper size by label; resolves with the resulting list. */
+export function removeCustomMedia(label: string): Promise<CustomMediaList> {
+  return invoke<CustomMediaList>("remove_custom_media", { label });
 }
 
 /** The certificate fingerprint clients approve, and the port they connect to. */

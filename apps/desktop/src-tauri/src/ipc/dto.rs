@@ -181,6 +181,51 @@ impl From<&[LocalPrinter]> for LocalPrintersDto {
     }
 }
 
+/// A user-configured custom paper size shown in the sharing settings.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CustomMediaDto {
+    /// Human-readable name shown in the UI; also used to identify the entry.
+    pub label: String,
+    /// Width in tenths of a millimetre.
+    pub width_tenths_mm: i16,
+    /// Height in tenths of a millimetre.
+    pub height_tenths_mm: i16,
+}
+
+impl From<&crate::application::CustomMedia> for CustomMediaDto {
+    fn from(media: &crate::application::CustomMedia) -> Self {
+        Self {
+            label: media.label.clone(),
+            width_tenths_mm: media.short_tenths_mm,
+            height_tenths_mm: media.long_tenths_mm,
+        }
+    }
+}
+
+impl From<CustomMediaDto> for crate::application::CustomMedia {
+    fn from(dto: CustomMediaDto) -> Self {
+        Self {
+            label: dto.label,
+            short_tenths_mm: dto.width_tenths_mm,
+            long_tenths_mm: dto.height_tenths_mm,
+        }
+    }
+}
+
+/// Every configured custom paper size.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CustomMediaListDto {
+    pub media: Vec<CustomMediaDto>,
+}
+
+impl From<&[crate::application::CustomMedia]> for CustomMediaListDto {
+    fn from(media: &[crate::application::CustomMedia]) -> Self {
+        Self {
+            media: media.iter().map(CustomMediaDto::from).collect(),
+        }
+    }
+}
+
 /// A ShaPrint Client queue recognised by the local printer service.
 ///
 /// This DTO is shared by the headless Linux daemon and the desktop IPC commands, so it lives in

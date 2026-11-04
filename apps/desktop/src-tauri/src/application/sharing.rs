@@ -15,10 +15,51 @@ use crate::domain::{AppError, PrinterName, SharedPrinters};
 /// File that records the user's selected shared printers and sharing state.
 const SETTINGS_FILE: &str = "sharing_state.json";
 
+/// A user-configured custom paper size shared with clients alongside the built-in catalog.
+///
+/// Dimensions are stored in tenths of a millimetre with the short side first. The advertised IPP
+/// keyword is derived as `custom_<w>x<h>mm` (see `media::custom_keyword`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CustomMedia {
+    /// A human-readable label shown in the sharing settings; not the advertised keyword.
+    pub label: String,
+    pub short_tenths_mm: i16,
+    pub long_tenths_mm: i16,
+}
+
+impl CustomMedia {
+    /// Validates the label and dimensions, and normalises the sides so the short side is first.
+    fn validate(&self) -> Result<(), AppError> {
+        let label = self.label.trim();
+        if label.is_empty() {
+            return Err(AppError::invalid_input("custom media label cannot be empty"));
+        }
+        if label.len() > 80 {
+            return Err(AppError::invalid_input("custom media label is too long"));
+        }
+        let (short, long) = self.sorted_sides();
+        if !crate::adapters::printers::media::custom_dimensions_are_supported(short, long) {
+            return Err(AppError::invalid_input(format!(
+                "custom media {short}x{long} (tenths mm) is outside the supported range (50mm to 330.2x450mm)"
+            )));
+        }
+        Ok(())
+    }
+
+    fn sorted_sides(&self) -> (i16, i16) {
+        (
+            self.short_tenths_mm.min(self.long_tenths_mm),
+            self.short_tenths_mm.max(self.long_tenths_mm),
+        )
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct SavedSharing {
     enabled: bool,
     printers: Vec<String>,
+    #[serde(default)]
+    custom_media: Vec<CustomMedia>,
 }
 
 /// One local queue as the UI lists it.
@@ -54,6 +95,7 @@ pub struct Sharing {
     changes: watch::Sender<SharedPrinters>,
     preference_path: Option<PathBuf>,
     enabled: RwLock<bool>,
+    custom_media: RwLock<Vec<CustomMedia>>,
 }
 
 impl Sharing {
@@ -84,16 +126,25 @@ impl Sharing {
                 }
             });
 
-        let (enabled, initial_printers) = match saved {
+        let (enabled, initial_printers, initial_custom_media) = match saved {
             Some(settings) => {
                 let names: Vec<PrinterName> = settings
                     .printers
                     .iter()
                     .filter_map(|s| PrinterName::parse(s).ok())
                     .collect();
-                (settings.enabled, SharedPrinters::new(names))
+                let custom_media = settings
+                    .custom_media
+                    .into_iter()
+                    .filter(|media| media.validate().is_ok())
+                    .collect();
+                (
+                    settings.enabled,
+                    SharedPrinters::new(names),
+                    custom_media,
+                )
             }
-            None => (false, SharedPrinters::default()),
+            None => (false, SharedPrinters::default(), Vec::new()),
         };
 
         let (changes, _) = watch::channel(initial_printers.clone());
@@ -103,6 +154,7 @@ impl Sharing {
             changes,
             preference_path,
             enabled: RwLock::new(enabled),
+            custom_media: RwLock::new(initial_custom_media),
         }
     }
 
@@ -246,9 +298,14 @@ impl Sharing {
             .enabled
             .read()
             .map_err(|_| AppError::internal("printer selection lock is poisoned"))?;
+        let custom_media = self
+            .custom_media
+            .read()
+            .map_err(|_| AppError::internal("custom media lock is poisoned"))?;
         let saved = SavedSharing {
             enabled: *enabled,
             printers,
+            custom_media: custom_media.clone(),
         };
         let bytes = serde_json::to_vec(&saved)
             .map_err(|_| AppError::internal("cannot serialize server sharing settings"))?;
@@ -268,6 +325,58 @@ impl Sharing {
             .map(|selection| selection.clone())
             .map_err(|_| AppError::internal("printer selection lock is poisoned"))
     }
+
+    /// The user-configured custom paper sizes, in the order they were added.
+    pub fn list_custom_media(&self) -> Vec<CustomMedia> {
+        self.custom_media
+            .read()
+            .map(|media| media.clone())
+            .unwrap_or_default()
+    }
+
+    /// Adds a custom paper size and returns the resulting list.
+    ///
+    /// The label must be unique and the dimensions must fall within the supported range; both are
+    /// validated before the entry is stored and persisted.
+    pub fn add_custom_media(&self, media: CustomMedia) -> Result<Vec<CustomMedia>, AppError> {
+        let media = CustomMedia {
+            label: media.label.trim().to_owned(),
+            short_tenths_mm: media.short_tenths_mm,
+            long_tenths_mm: media.long_tenths_mm,
+        };
+        media.validate()?;
+        {
+            let mut current = self
+                .custom_media
+                .write()
+                .map_err(|_| AppError::internal("custom media lock is poisoned"))?;
+            if current
+                .iter()
+                .any(|existing| existing.label.eq_ignore_ascii_case(&media.label))
+            {
+                return Err(AppError::invalid_input(format!(
+                    "a custom media size named '{}' already exists",
+                    media.label
+                )));
+            }
+            current.push(media);
+        }
+        self.persist()?;
+        Ok(self.list_custom_media())
+    }
+
+    /// Removes a custom paper size by label and returns the resulting list.
+    pub fn remove_custom_media(&self, label: &str) -> Result<Vec<CustomMedia>, AppError> {
+        {
+            let mut current = self
+                .custom_media
+                .write()
+                .map_err(|_| AppError::internal("custom media lock is poisoned"))?;
+            current.retain(|media| !media.label.eq_ignore_ascii_case(label));
+        }
+        self.persist()?;
+        Ok(self.list_custom_media())
+    }
 }
 
 impl SharedPrinterSource for Sharing {
@@ -276,6 +385,17 @@ impl SharedPrinterSource for Sharing {
             .read()
             .map(|selection| selection.as_slice().to_vec())
             .unwrap_or_default()
+    }
+
+    fn custom_media(&self) -> Vec<crate::adapters::printers::media::AdvertisedMedia> {
+        use crate::adapters::printers::media::AdvertisedMedia;
+        self.list_custom_media()
+            .iter()
+            .map(|media| {
+                let (short, long) = media.sorted_sides();
+                AdvertisedMedia::custom(short, long)
+            })
+            .collect()
     }
 }
 
@@ -455,6 +575,90 @@ mod tests {
             Sharing::with_persistence(FakeCatalog::new(&["HP LaserJet", "Zebra"]), Some(&path));
         assert_eq!(sharing2.shared_printers(), vec![name("Zebra")]);
         assert!(sharing2.is_autostart_enabled());
+
+        std::fs::remove_dir_all(&path).ok();
+    }
+
+    #[tokio::test]
+    async fn custom_media_can_be_added_and_removed() {
+        let sharing = sharing(&["HP LaserJet"]);
+
+        let initial = sharing.list_custom_media();
+        assert!(initial.is_empty());
+
+        let after_add = sharing
+            .add_custom_media(CustomMedia {
+                label: "Receipt 80x120mm".to_owned(),
+                short_tenths_mm: 800,
+                long_tenths_mm: 1200,
+            })
+            .expect("adds custom media");
+        assert_eq!(after_add.len(), 1);
+        assert_eq!(after_add[0].label, "Receipt 80x120mm");
+
+        // Advertised media expose the derived keyword.
+        let advertised = sharing.custom_media();
+        assert_eq!(advertised.len(), 1);
+        assert_eq!(advertised[0].keyword, "custom_80x120mm");
+        assert_eq!(advertised[0].paper_id, 256);
+
+        let after_remove = sharing
+            .remove_custom_media("receipt 80x120mm")
+            .expect("removes case-insensitively");
+        assert!(after_remove.is_empty());
+        assert!(sharing.custom_media().is_empty());
+    }
+
+    #[tokio::test]
+    async fn custom_media_validates_dimensions_and_unique_labels() {
+        let sharing = sharing(&["HP LaserJet"]);
+
+        let out_of_range = sharing.add_custom_media(CustomMedia {
+            label: "Tiny".to_owned(),
+            short_tenths_mm: 100,
+            long_tenths_mm: 150,
+        });
+        assert_eq!(out_of_range.expect_err("rejected").code(), ErrorCode::InvalidInput);
+
+        sharing
+            .add_custom_media(CustomMedia {
+                label: "Receipt".to_owned(),
+                short_tenths_mm: 1000,
+                long_tenths_mm: 1500,
+            })
+            .expect("adds first");
+        let duplicate = sharing.add_custom_media(CustomMedia {
+            label: "receipt".to_owned(),
+            short_tenths_mm: 1000,
+            long_tenths_mm: 1500,
+        });
+        assert_eq!(
+            duplicate.expect_err("rejected").code(),
+            ErrorCode::InvalidInput
+        );
+    }
+
+    #[tokio::test]
+    async fn custom_media_persists_across_reloads() {
+        let path = temporary_directory("persist-custom-media");
+
+        let sharing1 =
+            Sharing::with_persistence(FakeCatalog::new(&["HP LaserJet"]), Some(&path));
+        sharing1
+            .add_custom_media(CustomMedia {
+                label: "Label 100x150mm".to_owned(),
+                short_tenths_mm: 1000,
+                long_tenths_mm: 1500,
+            })
+            .expect("adds custom media");
+
+        let sharing2 =
+            Sharing::with_persistence(FakeCatalog::new(&["HP LaserJet"]), Some(&path));
+        let restored = sharing2.list_custom_media();
+        assert_eq!(restored.len(), 1);
+        assert_eq!(restored[0].label, "Label 100x150mm");
+        assert_eq!(restored[0].short_tenths_mm, 1000);
+        assert_eq!(restored[0].long_tenths_mm, 1500);
 
         std::fs::remove_dir_all(&path).ok();
     }

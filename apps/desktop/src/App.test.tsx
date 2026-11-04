@@ -39,6 +39,9 @@ vi.mock("./api/ipc", () => ({
   onRuntimeStatus: vi.fn(),
   listLocalPrinters: vi.fn(),
   setSharedPrinters: vi.fn(),
+  listCustomMedia: vi.fn(),
+  addCustomMedia: vi.fn(),
+  removeCustomMedia: vi.fn(),
   getServerIdentity: vi.fn(),
   getControlMode: vi.fn(),
   shutdownDaemon: vi.fn(),
@@ -178,6 +181,9 @@ beforeEach(() => {
   });
   vi.mocked(ipc.listLocalPrinters).mockResolvedValue(printersWith());
   vi.mocked(ipc.getServerIdentity).mockResolvedValue(IDENTITY);
+  vi.mocked(ipc.listCustomMedia).mockResolvedValue({ media: [] });
+  vi.mocked(ipc.addCustomMedia).mockResolvedValue({ media: [] });
+  vi.mocked(ipc.removeCustomMedia).mockResolvedValue({ media: [] });
   vi.mocked(serverConnections.listRecognisedClientQueues).mockResolvedValue([]);
   vi.mocked(serverConnections.listTrustedServers).mockResolvedValue([]);
   vi.mocked(serverConnections.forgetTrustedServer).mockResolvedValue();
@@ -1695,6 +1701,52 @@ describe("shared printers panel", () => {
     expect(ipc.setSharedPrinters).toHaveBeenCalledWith(["Zebra"]);
     await waitFor(() => expect(printerRow(container, "Zebra").dataset.shared).toBe("true"));
     expect(printerRow(container, "HP LaserJet").dataset.shared).toBe("false");
+  });
+
+  it("lists and adds custom paper sizes in the sharing panel", async () => {
+    vi.mocked(ipc.listCustomMedia).mockResolvedValue({
+      media: [{ label: "Receipt 80x120", widthTenthsMm: 800, heightTenthsMm: 1200 }],
+    });
+    vi.mocked(ipc.addCustomMedia).mockResolvedValue({
+      media: [
+        { label: "Receipt 80x120", widthTenthsMm: 800, heightTenthsMm: 1200 },
+        { label: "Label 100x150", widthTenthsMm: 1000, heightTenthsMm: 1500 },
+      ],
+    });
+    const { container } = render(<App />);
+
+    await sharingPanel(container);
+    const panel = screen.getByRole("region", { name: "Local printers" });
+
+    const heading = await within(panel).findByRole("heading", {
+      name: "Custom paper sizes",
+    });
+    expect(heading).toBeTruthy();
+    expect(within(panel).getByText("Receipt 80x120")).toBeTruthy();
+    expect(within(panel).getByText(/80 × 120 mm/)).toBeTruthy();
+
+    fireEvent.change(
+      within(panel).getByLabelText("Custom paper size label"),
+      { target: { value: "Label 100x150" } },
+    );
+    fireEvent.change(
+      within(panel).getByLabelText("Custom paper size width in millimetres"),
+      { target: { value: "100" } },
+    );
+    fireEvent.change(
+      within(panel).getByLabelText("Custom paper size height in millimetres"),
+      { target: { value: "150" } },
+    );
+    fireEvent.click(within(panel).getByRole("button", { name: "Add" }));
+
+    await waitFor(() => {
+      expect(ipc.addCustomMedia).toHaveBeenCalledWith({
+        label: "Label 100x150",
+        widthTenthsMm: 1000,
+        heightTenthsMm: 1500,
+      });
+    });
+    expect(await within(panel).findByText("Label 100x150")).toBeTruthy();
   });
 
   it("shows the certificate fingerprint a client has to approve", async () => {

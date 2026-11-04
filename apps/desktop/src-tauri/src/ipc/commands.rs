@@ -19,8 +19,9 @@ use crate::application::{LegacyImport, PrintFailures, PrintJobTracker, Startup};
 use crate::domain::{AppError, PrinterName, ServiceId};
 use crate::ipc::control::{ControlMode, ControlPlane, SharedControl};
 use crate::ipc::dto::{
-    AppErrorDto, ClientQueueDto, DiagnosticsReportDto, LegacyImportReportDto, LocalPrintersDto,
-    PrintFailureDto, RuntimeStatusDto, ServerIdentityDto, StartupStatusDto,
+    AppErrorDto, ClientQueueDto, CustomMediaDto, CustomMediaListDto, DiagnosticsReportDto,
+    LegacyImportReportDto, LocalPrintersDto, PrintFailureDto, RuntimeStatusDto, ServerIdentityDto,
+    StartupStatusDto,
 };
 
 /// The latest failed print attempt, as the window reports it.
@@ -297,6 +298,61 @@ pub async fn set_shared_printers(
             Err(AppErrorDto::from(&error))
         }
     }
+}
+
+/// Lists the user-configured custom paper sizes advertised to clients.
+#[tauri::command]
+pub async fn list_custom_media(
+    control: State<'_, SharedControl>,
+) -> Result<CustomMediaListDto, AppErrorDto> {
+    log::info!("command=list_custom_media");
+    control.list_custom_media().await.map_err(|error| {
+        log::warn!(
+            "command=list_custom_media code={} message={}",
+            error.code_str(),
+            error
+        );
+        AppErrorDto::from(&error)
+    })
+}
+
+/// Adds a custom paper size and returns the resulting list.
+#[tauri::command]
+pub async fn add_custom_media(
+    media: CustomMediaDto,
+    control: State<'_, SharedControl>,
+) -> Result<CustomMediaListDto, AppErrorDto> {
+    log::info!(
+        "command=add_custom_media label={} size={}x{}",
+        media.label,
+        media.width_tenths_mm,
+        media.height_tenths_mm
+    );
+    control.add_custom_media(media).await.map_err(|error| {
+        log::warn!(
+            "command=add_custom_media code={} message={}",
+            error.code_str(),
+            error
+        );
+        AppErrorDto::from(&error)
+    })
+}
+
+/// Removes a custom paper size by label and returns the resulting list.
+#[tauri::command]
+pub async fn remove_custom_media(
+    label: String,
+    control: State<'_, SharedControl>,
+) -> Result<CustomMediaListDto, AppErrorDto> {
+    log::info!("command=remove_custom_media label={label}");
+    control.remove_custom_media(&label).await.map_err(|error| {
+        log::warn!(
+            "command=remove_custom_media code={} message={}",
+            error.code_str(),
+            error
+        );
+        AppErrorDto::from(&error)
+    })
 }
 
 /// Returns the certificate fingerprint clients approve and the port they connect to.

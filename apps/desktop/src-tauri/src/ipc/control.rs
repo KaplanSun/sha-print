@@ -16,8 +16,8 @@ use crate::ipc::client_connections::{
     ServerConnectionPrintersDto, ServerConnectionReviewDto, TrustedServerDto, TrustedServerProbeDto,
 };
 use crate::ipc::dto::{
-    ClientQueueDto, DiagnosticsReportDto, LocalPrintersDto, RecognisedClientQueueDto,
-    RuntimeStatusDto, ServerIdentityDto,
+    ClientQueueDto, CustomMediaDto, CustomMediaListDto, DiagnosticsReportDto, LocalPrintersDto,
+    RecognisedClientQueueDto, RuntimeStatusDto, ServerIdentityDto,
 };
 use crate::Shell;
 
@@ -394,6 +394,52 @@ impl ControlPlane {
                     other => Err(unexpected_outcome("set shared printers", &other)),
                 }
             }
+        }
+    }
+
+    /// The user-configured custom paper sizes advertised to clients.
+    pub async fn list_custom_media(&self) -> Result<CustomMediaListDto, AppError> {
+        match self {
+            Self::Local(shell) => {
+                let media = shell.sharing().list_custom_media();
+                Ok(CustomMediaListDto::from(media.as_slice()))
+            }
+            #[cfg(unix)]
+            Self::Machine(_) => Ok(CustomMediaListDto { media: Vec::new() }),
+        }
+    }
+
+    /// Adds a custom paper size and returns the resulting list.
+    pub async fn add_custom_media(
+        &self,
+        media: CustomMediaDto,
+    ) -> Result<CustomMediaListDto, AppError> {
+        match self {
+            Self::Local(shell) => {
+                let updated = shell.sharing().add_custom_media(media.into())?;
+                Ok(CustomMediaListDto::from(updated.as_slice()))
+            }
+            #[cfg(unix)]
+            Self::Machine(_) => Err(AppError::unsupported(
+                "custom media sizes are configured in the desktop sharing settings",
+            )),
+        }
+    }
+
+    /// Removes a custom paper size by label and returns the resulting list.
+    pub async fn remove_custom_media(
+        &self,
+        label: &str,
+    ) -> Result<CustomMediaListDto, AppError> {
+        match self {
+            Self::Local(shell) => {
+                let updated = shell.sharing().remove_custom_media(label)?;
+                Ok(CustomMediaListDto::from(updated.as_slice()))
+            }
+            #[cfg(unix)]
+            Self::Machine(_) => Err(AppError::unsupported(
+                "custom media sizes are configured in the desktop sharing settings",
+            )),
         }
     }
 

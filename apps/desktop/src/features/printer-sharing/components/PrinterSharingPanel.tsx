@@ -1,5 +1,17 @@
 import { useId, useMemo, useState } from "react";
-import { Copy, KeyRound, Play, Printer, RefreshCw, Search, ShieldCheck, Square } from "lucide-react";
+import {
+  Copy,
+  KeyRound,
+  Play,
+  Plus,
+  Printer,
+  RefreshCw,
+  Ruler,
+  Search,
+  ShieldCheck,
+  Square,
+  Trash2,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,18 +28,35 @@ export interface PrinterSharingPanelProps {
   networkChannel?: NetworkChannelController;
 }
 
+/** Formats tenths of a millimetre as a compact millimetre label. */
+function fmtMm(tenthsMm: number): string {
+  const mm = tenthsMm / 10;
+  return Number.isInteger(mm) ? String(mm) : mm.toFixed(1);
+}
+
+/** Parses a positive millimetre value from a text input, or `null` when invalid. */
+function parseMm(value: string): number | null {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
 /** The server side of sharing: local queues, start/stop intent, and certificate identity. */
 export function PrinterSharingPanel({
   sharing,
   runtime,
   networkChannel,
 }: PrinterSharingPanelProps) {
-  const { printers, identity, busy, error, toggle, refresh, dismissError } = sharing;
+  const { printers, identity, customMedia, customMediaBusy, busy, error, toggle, refresh, dismissError, addCustomMedia, removeCustomMedia } = sharing;
   const [copyMessage, setCopyMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showChannelPrompt, setShowChannelPrompt] = useState(false);
   const [channelInput, setChannelInput] = useState("");
   const [channelError, setChannelError] = useState<string | null>(null);
+  const [customLabel, setCustomLabel] = useState("");
+  const [customWidthMm, setCustomWidthMm] = useState("");
+  const [customHeightMm, setCustomHeightMm] = useState("");
+  const [customFormError, setCustomFormError] = useState<string | null>(null);
   const searchId = useId();
 
   const sharedCount = printers?.filter((printer) => printer.shared).length ?? 0;
@@ -97,6 +126,43 @@ export function PrinterSharingPanel({
     setChannelInput("");
     setChannelError(null);
     setShowChannelPrompt(false);
+  }
+
+  async function handleAddCustomMedia(e: React.FormEvent) {
+    e.preventDefault();
+    const label = customLabel.trim();
+    const widthMm = parseMm(customWidthMm);
+    const heightMm = parseMm(customHeightMm);
+    if (!label) {
+      setCustomFormError("Enter a name for this paper size.");
+      return;
+    }
+    if (widthMm === null || heightMm === null) {
+      setCustomFormError("Width and height must be positive numbers in millimetres.");
+      return;
+    }
+    setCustomFormError(null);
+    try {
+      await addCustomMedia({
+        label,
+        widthTenthsMm: Math.round(widthMm * 10),
+        heightTenthsMm: Math.round(heightMm * 10),
+      });
+      setCustomLabel("");
+      setCustomWidthMm("");
+      setCustomHeightMm("");
+    } catch {
+      setCustomFormError("Could not add the custom paper size. See the error banner for details.");
+    }
+  }
+
+  async function handleRemoveCustomMedia(label: string) {
+    setCustomFormError(null);
+    try {
+      await removeCustomMedia(label);
+    } catch {
+      setCustomFormError("Could not remove the custom paper size. See the error banner for details.");
+    }
   }
 
   return (
@@ -303,6 +369,101 @@ export function PrinterSharingPanel({
                   : "Selected queues will be shared when you click Start sharing."}
             </p>
           </div>
+        ) : null}
+      </div>
+
+      <div className="custom-media rounded-lg border border-border bg-card p-4 space-y-3 mt-2">
+        <div className="flex items-center gap-2">
+          <Ruler size={16} className="text-primary" aria-hidden="true" />
+          <h3 className="text-sm font-semibold text-foreground">Custom paper sizes</h3>
+        </div>
+        <p className="hint text-xs text-muted-foreground">
+          Add paper sizes outside the built-in catalog. Clients can then select them when printing.
+        </p>
+
+        {customMedia === null ? (
+          <p className="hint text-xs text-muted-foreground" role="status">
+            Reading custom paper sizes…
+          </p>
+        ) : customMedia.length === 0 ? (
+          <p className="hint text-xs text-muted-foreground">
+            No custom paper sizes configured.
+          </p>
+        ) : (
+          <ul className="custom-media-list divide-y divide-border/60">
+            {customMedia.map((media) => (
+              <li
+                key={media.label}
+                className="flex items-center justify-between gap-2 py-1.5"
+                data-custom-media={media.label}
+              >
+                <span className="text-sm font-medium text-foreground truncate">{media.label}</span>
+                <span className="text-xs font-mono text-muted-foreground shrink-0">
+                  {fmtMm(media.widthTenthsMm)} × {fmtMm(media.heightTenthsMm)} mm
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Remove ${media.label}`}
+                  disabled={customMediaBusy}
+                  onClick={() => void handleRemoveCustomMedia(media.label)}
+                  className="text-xs h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 size={14} aria-hidden="true" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form
+          onSubmit={(e) => void handleAddCustomMedia(e)}
+          className="custom-media-form grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end"
+        >
+          <Input
+            placeholder="Label (e.g. Receipt 80x120)"
+            value={customLabel}
+            onChange={(e) => setCustomLabel(e.target.value)}
+            aria-label="Custom paper size label"
+            className="text-xs h-8"
+            maxLength={80}
+          />
+          <Input
+            type="number"
+            step="0.1"
+            min="50"
+            placeholder="Width mm"
+            value={customWidthMm}
+            onChange={(e) => setCustomWidthMm(e.target.value)}
+            aria-label="Custom paper size width in millimetres"
+            className="text-xs h-8 w-28"
+          />
+          <Input
+            type="number"
+            step="0.1"
+            min="50"
+            placeholder="Height mm"
+            value={customHeightMm}
+            onChange={(e) => setCustomHeightMm(e.target.value)}
+            aria-label="Custom paper size height in millimetres"
+            className="text-xs h-8 w-28"
+          />
+          <Button
+            type="submit"
+            variant="outline"
+            size="sm"
+            disabled={customMediaBusy}
+            className="text-xs h-8"
+          >
+            <Plus size={13} className="mr-1" aria-hidden="true" />
+            Add
+          </Button>
+        </form>
+        {customFormError ? (
+          <p className="text-xs text-destructive font-medium" role="alert">
+            {customFormError}
+          </p>
         ) : null}
       </div>
 

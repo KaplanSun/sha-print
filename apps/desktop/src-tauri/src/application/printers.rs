@@ -178,4 +178,12 @@ impl LocalPrinterCatalog for DestinationAwarePrinterCatalog {
 /// selection take effect while sharing runs.
 pub trait SharedPrinterSource: Send + Sync + 'static {
     fn shared_printers(&self) -> Vec<PrinterName>;
+
+    /// Custom paper sizes configured for the server, advertised alongside the built-in catalog.
+    ///
+    /// Defaults to empty so adapters that only relay or install client queues do not need to
+    /// provide a value; the server sharing use case overrides it.
+    fn custom_media(&self) -> Vec<crate::adapters::printers::media::AdvertisedMedia> {
+        Vec::new()
+    }
 }

@@ -103,6 +103,72 @@ pub(crate) fn custom_dimensions_are_supported(short: i16, long: i16) -> bool {
         && long <= CUSTOM_MAX_LONG_TENTHS_MM
 }
 
+/// A media entry the server advertises to clients, carrying an owned keyword so it can represent
+/// either a built-in catalog size or a user-configured custom size.
+///
+/// The built-in catalog uses `&'static str` keywords; a custom size the user configures at runtime
+/// needs an owned `String`. This type is the runtime form both share, and it is what the IPPS
+/// response builders consume.
+#[derive(Debug, Clone)]
+pub struct AdvertisedMedia {
+    pub keyword: String,
+    pub paper_id: i16,
+    pub short_tenths_mm: i16,
+    pub long_tenths_mm: i16,
+    pub explicit_dimensions: bool,
+}
+
+impl AdvertisedMedia {
+    /// Copies a built-in catalog entry into its runtime form.
+    pub(crate) fn from_spec(spec: &MediaSpec) -> Self {
+        Self {
+            keyword: spec.keyword.to_owned(),
+            paper_id: spec.paper_id,
+            short_tenths_mm: spec.short_tenths_mm,
+            long_tenths_mm: spec.long_tenths_mm,
+            explicit_dimensions: spec.explicit_dimensions,
+        }
+    }
+
+    /// Builds the runtime entry for a user-configured custom size.
+    ///
+    /// Custom media use `DMPAPER_CUSTOM` (`paper_id` 256) and are advertised with the
+    /// `custom_<w>x<h>mm` keyword — the same form `media_spec` already parses — so a client job
+    /// submitted with a custom size maps onto the Windows DEVMODE with no extra plumbing.
+    pub fn custom(short_tenths_mm: i16, long_tenths_mm: i16) -> Self {
+        Self {
+            keyword: custom_keyword(short_tenths_mm, long_tenths_mm),
+            paper_id: 256,
+            short_tenths_mm,
+            long_tenths_mm,
+            explicit_dimensions: true,
+        }
+    }
+}
+
+/// The IPP keyword used to advertise a custom media size (e.g. `custom_100x150mm`).
+pub fn custom_keyword(short_tenths_mm: i16, long_tenths_mm: i16) -> String {
+    format!(
+        "custom_{}x{}mm",
+        short_tenths_mm as f64 / 10.0,
+        long_tenths_mm as f64 / 10.0
+    )
+}
+
+/// Merges the built-in catalog with the user-configured custom sizes, dropping any duplicate that
+/// would otherwise collide with a built-in keyword.
+#[cfg(any(windows, unix, test))]
+pub fn advertised_catalog(custom: &[AdvertisedMedia]) -> Vec<AdvertisedMedia> {
+    let mut catalog: Vec<AdvertisedMedia> =
+        MEDIA_CATALOG.iter().map(AdvertisedMedia::from_spec).collect();
+    for media in custom {
+        if !catalog.iter().any(|existing| existing.keyword == media.keyword) {
+            catalog.push(media.clone());
+        }
+    }
+    catalog
+}
+
 #[cfg(any(windows, unix, test))]
 fn parse_media_dimensions(value: &str) -> Option<(i16, i16)> {
     let (dimensions, scale) = if let Some(value) = value.strip_suffix("mm") {
@@ -201,5 +267,43 @@ mod tests {
         assert!(media_spec("custom_49x150mm").is_none());
         assert!(media_spec("custom_331x450mm").is_none());
         assert!(media_spec("custom_330x451mm").is_none());
+    }
+
+    #[test]
+    fn custom_keyword_round_trips_through_media_spec() {
+        // Dimensions always resolve; sizes that exactly match a built-in (e.g. A4) map to the
+        // standard spec, while genuinely custom sizes use `DMPAPER_CUSTOM`.
+        for (short, long, paper_id) in [
+            (1000, 1500, 256),
+            (3302, 4500, 256),
+            (500, 500, 256),
+            (2100, 2970, 9),
+        ] {
+            let keyword = custom_keyword(short, long);
+            let resolved = media_spec(&keyword).expect("custom keyword resolves");
+            assert_eq!(resolved.paper_id, paper_id, "for {keyword}");
+            assert_eq!(resolved.short_tenths_mm, short);
+            assert_eq!(resolved.long_tenths_mm, long);
+        }
+    }
+
+    #[test]
+    fn advertised_catalog_merges_custom_media_after_builtins_and_dedups() {
+        let custom = vec![
+            AdvertisedMedia::custom(1000, 1500),
+            AdvertisedMedia::custom(3302, 4500),
+        ];
+        let catalog = advertised_catalog(&custom);
+        assert_eq!(catalog.len(), MEDIA_CATALOG.len() + custom.len());
+        // Built-ins come first, in catalog order.
+        assert_eq!(catalog[0].keyword, MEDIA_CATALOG[0].keyword);
+        // Custom entries are appended.
+        assert_eq!(catalog.last().unwrap().keyword, "custom_330.2x450mm");
+        // A custom entry colliding with a built-in keyword is dropped.
+        let duplicate = vec![AdvertisedMedia::from_spec(&MEDIA_CATALOG[0])];
+        assert_eq!(
+            advertised_catalog(&duplicate).len(),
+            MEDIA_CATALOG.len()
+        );
     }
 }
