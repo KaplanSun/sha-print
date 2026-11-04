@@ -32,10 +32,10 @@ export function NearbyServersPanel({
           </div>
           <div>
             <h2 id="nearby-servers-heading" className="text-base font-semibold leading-none">
-              Nearby servers
+              附近服务器
             </h2>
             <p className="hint text-xs mt-1 text-muted-foreground">
-              Found on this local network.
+              在本局域网中发现。
             </p>
           </div>
         </div>
@@ -48,13 +48,13 @@ export function NearbyServersPanel({
             className="gap-1.5 text-xs font-semibold shadow-xs"
           >
             <Plus size={15} />
-            <span>Add printer</span>
+            <span>添加打印机</span>
           </Button>
         )}
       </div>
 
       <p className="hint discovery-scope">
-        Discovery only reaches this subnet. Enter a server address below to connect across networks.
+        发现仅覆盖本子网。跨网络连接请在下方向手动输入服务器地址。
       </p>
 
       {error ? (
@@ -68,20 +68,20 @@ export function NearbyServersPanel({
             className="banner-dismiss h-7 text-xs px-2"
             onClick={dismissError}
           >
-            Dismiss
+            关闭
           </Button>
         </p>
       ) : null}
 
       {servers.length === 0 ? (
         <div className="connection-empty" role="status">
-          <strong>Nothing found on this network.</strong>
-          <p>Enter a server address manually using Add printer. Manual entry works across subnets.</p>
+          <strong>本网络上未发现服务器。</strong>
+          <p>可使用“添加打印机”手动输入服务器地址，手动输入支持跨子网。</p>
         </div>
       ) : (
         <ul
           className="nearby-list divide-y divide-border/60"
-          aria-label="Nearby ShaPrint servers"
+          aria-label="附近的 ShaPrint 服务器"
           aria-live="polite"
         >
           {servers.map((server) => {
@@ -96,8 +96,7 @@ export function NearbyServersPanel({
                       </strong>
                       <ServerVersionBadges version={server.version} />
                       <Badge variant="muted" className="text-[10px]">
-                        {server.printers.length} shared{" "}
-                        {server.printers.length === 1 ? "printer" : "printers"}
+                        {server.printers.length} 台共享打印机
                       </Badge>
                     </div>
                     <p className="hint mt-1 text-xs text-muted-foreground">
@@ -107,8 +106,8 @@ export function NearbyServersPanel({
                     </p>
                     <p className="hint mt-0.5 text-xs text-muted-foreground">
                       {server.printers.length > 0
-                        ? `Advertised (unverified): ${server.printers.join(", ")}`
-                        : "Shares no printer right now"}
+                        ? `广播（未验证）：${server.printers.join(", ")}`
+                        : "当前未共享打印机"}
                     </p>
                   </div>
 
@@ -126,7 +125,7 @@ export function NearbyServersPanel({
                     }}
                     disabled={connections.busy !== null}
                   >
-                    Connect
+                    连接
                   </Button>
                 </div>
               </li>

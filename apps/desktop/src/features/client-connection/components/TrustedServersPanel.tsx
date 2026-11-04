@@ -20,10 +20,10 @@ export function TrustedServersPanel({ trusted, onReviewServer }: TrustedServersP
         </div>
         <div>
           <h2 id="trusted-servers-heading" className="text-base font-semibold leading-none">
-            Trusted servers
+            受信任的服务器
           </h2>
           <p className="hint mt-1 text-xs text-muted-foreground">
-            Saved certificate approvals stay here, including servers on other networks.
+            已保存的证书授权会保留在这里，包括其他网络上的服务器。
           </p>
         </div>
       </div>
@@ -37,26 +37,26 @@ export function TrustedServersPanel({ trusted, onReviewServer }: TrustedServersP
 
       {loading && servers.length === 0 ? (
         <p className="connection-empty" role="status">
-          Checking saved Trusted servers…
+          正在检查已保存的受信任服务器…
         </p>
       ) : servers.length === 0 ? (
         <div className="connection-empty" role="status">
-          <strong>No Trusted servers yet.</strong>
-          <p>Add a printer and approve its certificate to keep that server here.</p>
+          <strong>还没有受信任的服务器。</strong>
+          <p>添加打印机并批准其证书，即可将该服务器保留在这里。</p>
         </div>
       ) : (
-        <ul className="trusted-server-list divide-y divide-border/60" aria-label="Trusted server directory">
+        <ul className="trusted-server-list divide-y divide-border/60" aria-label="受信任服务器目录">
           {servers.map((server) => {
             const isOnline = server.status === "online";
             const identityChanged = server.status === "identity_changed";
             const isRefreshing = refreshing[server.address] || server.status === "checking";
             const badge = isOnline
-              ? { label: "Online", variant: "success" as const }
+              ? { label: "在线", variant: "success" as const }
               : identityChanged
-                ? { label: "Identity changed", variant: "warning" as const }
+                ? { label: "身份已变更", variant: "warning" as const }
                 : server.status === "checking"
-                  ? { label: "Checking", variant: "muted" as const }
-                  : { label: "Offline", variant: "warning" as const };
+                  ? { label: "检查中", variant: "muted" as const }
+                  : { label: "离线", variant: "warning" as const };
 
             return (
               <li key={server.address} className="trusted-server-row py-4 first:pt-1 last:pb-1">
@@ -75,14 +75,14 @@ export function TrustedServersPanel({ trusted, onReviewServer }: TrustedServersP
                     {isOnline ? (
                       <>
                         <p className="hint flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-300">
-                          <ShieldCheck size={14} /> Certificate matches the saved approval.
+                          <ShieldCheck size={14} /> 证书与已保存的授权一致。
                         </p>
                         <div className="hint flex items-start gap-1.5 text-xs text-muted-foreground">
                           <Printer size={14} className="mt-0.5 shrink-0" />
                           <p>
                             {server.printers.length > 0
-                              ? `Shared printers: ${server.printers.join(", ")}`
-                              : "No shared printers currently."}
+                              ? `共享打印机：${server.printers.join(", ")}`
+                              : "当前没有共享打印机。"}
                           </p>
                         </div>
                       </>
@@ -90,18 +90,18 @@ export function TrustedServersPanel({ trusted, onReviewServer }: TrustedServersP
                       <p className="hint flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200" role="alert">
                         <ShieldAlert size={14} className="mt-0.5 shrink-0" />
                         <span>
-                          The certificate changed. Saved fingerprint: {" "}
-                          <code className="break-all font-mono">{server.fingerprint}</code>. Current fingerprint: {" "}
-                          <code className="break-all font-mono">{server.current_fingerprint ?? "unavailable"}</code>.
-                          Printer list is withheld until you review the identity.
+                          证书已变更。已保存指纹：{" "}
+                          <code className="break-all font-mono">{server.fingerprint}</code>。当前指纹：{" "}
+                          <code className="break-all font-mono">{server.current_fingerprint ?? "不可用"}</code>。
+                          在复核身份前，打印机列表将被隐藏。
                         </span>
                       </p>
                     ) : server.status === "offline" ? (
                       <p className="hint text-xs text-muted-foreground">
-                        Server is unreachable. Its saved approval is kept.
+                        服务器无法访问。其已保存的授权会被保留。
                       </p>
                     ) : (
-                      <p className="hint text-xs text-muted-foreground">Checking the saved fingerprint and shared printers…</p>
+                      <p className="hint text-xs text-muted-foreground">正在检查已保存的指纹与共享打印机…</p>
                     )}
                   </div>
 
@@ -113,9 +113,9 @@ export function TrustedServersPanel({ trusted, onReviewServer }: TrustedServersP
                         size="sm"
                         className="text-xs"
                         onClick={() => onReviewServer(server.address)}
-                        aria-label={`${identityChanged ? "Review identity" : "Review shared printers"} for ${server.address}`}
+                        aria-label={`${identityChanged ? "复核身份" : "复核共享打印机"}：${server.address}`}
                       >
-                        {identityChanged ? "Review identity" : "Review printers"}
+                        {identityChanged ? "复核身份" : "复核打印机"}
                       </Button>
                     ) : null}
                     <Button
@@ -125,10 +125,10 @@ export function TrustedServersPanel({ trusted, onReviewServer }: TrustedServersP
                       className="text-xs"
                       onClick={() => void refresh(server.address)}
                       disabled={isRefreshing || Boolean(forgetting[server.address])}
-                      aria-label={`Refresh status for ${server.address}`}
+                      aria-label={`刷新 ${server.address} 的状态`}
                     >
                       <RefreshCw size={13} className={isRefreshing ? "animate-spin" : ""} />
-                      Refresh
+                      刷新
                     </Button>
                     <Button
                       type="button"
@@ -137,10 +137,10 @@ export function TrustedServersPanel({ trusted, onReviewServer }: TrustedServersP
                       className="text-xs text-muted-foreground hover:text-destructive"
                       onClick={() => void forget(server.address)}
                       disabled={Boolean(forgetting[server.address]) || Boolean(refreshing[server.address])}
-                      aria-label={`Forget ${server.address}`}
+                      aria-label={`忘记 ${server.address}`}
                     >
                       <Trash2 size={13} />
-                      Forget
+                      忘记
                     </Button>
                   </div>
                 </div>

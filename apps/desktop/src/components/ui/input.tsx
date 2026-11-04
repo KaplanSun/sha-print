@@ -31,7 +31,7 @@ export function PasswordInput({
   ...props
 }: PasswordInputProps) {
   const [show, setShow] = useState(false);
-  const actionLabel = `${show ? "Hide" : "Show"} ${visibilityLabel}`;
+  const actionLabel = `${show ? "隐藏" : "显示"} ${visibilityLabel}`;
 
   return (
     <div className="password-field relative flex w-full items-center">

@@ -83,7 +83,7 @@ export function InstalledClientQueuesPanel({
       await openPrintersSettings();
     } catch (err) {
       setManageError(
-        "Could not open Windows Settings automatically. Open Windows Settings > Bluetooth & devices > Printers & scanners to manage your installed queues.",
+        "无法自动打开 Windows 设置。请手动打开“Windows 设置 > 蓝牙和其他设备 > 打印机和扫描仪”来管理已安装的队列。",
       );
     }
   }
@@ -97,13 +97,13 @@ export function InstalledClientQueuesPanel({
       await repairPrinterQueue(repairTarget.server_address, repairTarget.printer_name);
       const repairedName = repairTarget.queue_name;
       setRepairTarget(null);
-      setRepairSuccess(`Repaired ${repairedName}. Windows reloaded its paper sizes.`);
+      setRepairSuccess(`已修复 ${repairedName}。Windows 已重新加载其纸张尺寸。`);
       await refresh();
     } catch (cause) {
       setRepairError(
         typeof cause === "object" && cause !== null && "message" in cause
           ? String((cause as { message: unknown }).message)
-          : "Could not repair the Windows printer queue.",
+          : "无法修复 Windows 打印机队列。",
       );
     } finally {
       setRepairing(false);
@@ -115,10 +115,10 @@ export function InstalledClientQueuesPanel({
       <div className="flex items-center justify-between gap-2">
         <div>
           <h2 id="installed-queues-title" className="text-base font-semibold">
-            My printers
+            我的打印机
           </h2>
           <p className="text-xs text-muted-foreground">
-            Printers available to your Windows applications through ShaPrint.
+            你的 Windows 应用可通过 ShaPrint 使用的打印机。
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -127,10 +127,10 @@ export function InstalledClientQueuesPanel({
             variant="default"
             size="sm"
             onClick={onAddPrinter}
-            aria-label="Add printer"
+            aria-label="添加打印机"
           >
             <Plus className="size-3.5 mr-1" />
-            Add printer
+            添加打印机
           </Button>
           <Button
             type="button"
@@ -138,17 +138,17 @@ export function InstalledClientQueuesPanel({
             size="sm"
             onClick={() => void refresh()}
             disabled={loading}
-            aria-label="Refresh installed queues"
+            aria-label="刷新已安装队列"
           >
             <RefreshCw className={`size-3.5 mr-1 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            刷新
           </Button>
         </div>
       </div>
 
       {loading && queues.length === 0 ? (
         <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-          Checking Windows printer queues…
+          正在检查 Windows 打印机队列…
         </div>
       ) : null}
 
@@ -161,7 +161,7 @@ export function InstalledClientQueuesPanel({
             size="sm"
             onClick={() => void refresh()}
           >
-            Retry
+            重试
           </Button>
         </div>
       ) : null}
@@ -170,7 +170,7 @@ export function InstalledClientQueuesPanel({
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
           <p className="font-medium">{manageError}</p>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            Copy the queue name below to search for it directly in Windows.
+            复制下方队列名称，可直接在 Windows 中搜索。
           </p>
         </div>
       ) : null}
@@ -184,15 +184,15 @@ export function InstalledClientQueuesPanel({
       {!loading && !error && queues.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center space-y-3">
           <p className="text-sm text-muted-foreground">
-            No ShaPrint client queues installed in Windows.
+            Windows 中尚未安装任何 ShaPrint 客户端队列。
           </p>
           <Button
             type="button"
             onClick={onAddPrinter}
-            aria-label="Add a printer now"
+            aria-label="立即添加打印机"
           >
             <Plus className="size-4 mr-1.5" />
-            Add printer
+            添加打印机
           </Button>
         </div>
       ) : null}
@@ -200,7 +200,7 @@ export function InstalledClientQueuesPanel({
       {queues.length > 0 ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Windows-managed queues ({queues.length})</span>
+            <span>Windows 管理的队列（{queues.length}）</span>
             <Button
               type="button"
               variant="ghost"
@@ -209,11 +209,11 @@ export function InstalledClientQueuesPanel({
               onClick={() => void handleManageInWindows()}
             >
               <ExternalLink className="size-3 mr-1" />
-              Manage in Windows
+              在 Windows 中管理
             </Button>
           </div>
 
-          <ul className="space-y-2" aria-label="Installed printer queues">
+          <ul className="space-y-2" aria-label="已安装的打印机队列">
             {queues.map((queue) => {
               const identityChanged = serverChangedMap[queue.server_address] === true;
 
@@ -233,7 +233,7 @@ export function InstalledClientQueuesPanel({
                         size="sm"
                         className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
                         onClick={() => void handleCopyQueueName(queue.queue_name)}
-                        aria-label={`Copy queue name ${queue.queue_name}`}
+                        aria-label={`复制队列名称 ${queue.queue_name}`}
                       >
                         {copiedQueue === queue.queue_name ? (
                           <Check className="size-3 text-green-600" />
@@ -243,22 +243,22 @@ export function InstalledClientQueuesPanel({
                       </Button>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Shared printer: <span className="font-semibold">{queue.printer_name}</span> on{" "}
-                      <span>{queue.server_address}</span>
+                      共享打印机：<span className="font-semibold">{queue.printer_name}</span>（位于{" "}
+                      <span>{queue.server_address}</span>）
                     </div>
 
                     {identityChanged ? (
                       <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-medium pt-1">
                         <ShieldAlert className="size-3.5 shrink-0" />
-                        <span>Server identity changed. Printing is blocked until reverified.</span>
+                        <span>服务器身份已变更。在重新验证前，打印已被阻止。</span>
                       </div>
                     ) : null}
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-auto">
                     {onTroubleshoot ? <Button type="button" variant="outline" size="sm"
-                      onClick={() => onTroubleshoot(queue)} aria-label={`Troubleshoot ${queue.queue_name}`}>
-                      Troubleshoot
+                      onClick={() => onTroubleshoot(queue)} aria-label={`对 ${queue.queue_name} 进行故障排查`}>
+                      故障排查
                     </Button> : null}
                     {identityChanged && onReverifyServer ? (
                       <Button
@@ -267,10 +267,10 @@ export function InstalledClientQueuesPanel({
                         size="sm"
                         className="h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white"
                         onClick={() => onReverifyServer(queue.server_address)}
-                        aria-label={`Reverify identity for ${queue.server_address}`}
+                        aria-label={`重新验证 ${queue.server_address} 的身份`}
                       >
                         <ShieldAlert className="size-3 mr-1" />
-                        Reverify identity
+                        重新验证身份
                       </Button>
                     ) : null}
 
@@ -284,10 +284,10 @@ export function InstalledClientQueuesPanel({
                         setRepairError(null);
                         setRepairTarget(queue);
                       }}
-                      aria-label={`Repair paper sizes for ${queue.queue_name}`}
+                      aria-label={`修复 ${queue.queue_name} 的纸张尺寸`}
                     >
                       <Wrench className="size-3 mr-1" />
-                      Repair paper sizes
+                      修复纸张尺寸
                     </Button>
 
                     <Button
@@ -298,7 +298,7 @@ export function InstalledClientQueuesPanel({
                       onClick={() => void handleManageInWindows()}
                     >
                       <ExternalLink className="size-3 mr-1" />
-                      Manage in Windows
+                      在 Windows 中管理
                     </Button>
                   </div>
                 </li>
@@ -320,11 +320,11 @@ export function InstalledClientQueuesPanel({
         ariaDescribedBy="repair-queue-description"
       >
         <DialogHeader>
-          <DialogTitle id="repair-queue-title">Repair paper sizes?</DialogTitle>
+          <DialogTitle id="repair-queue-title">修复纸张尺寸？</DialogTitle>
           <DialogDescription id="repair-queue-description">
-            ShaPrint will remove and reinstall {repairTarget?.queue_name}. Windows will request
-            administrator permission and may reset this printer&apos;s local printing preferences.
-            Pending print jobs must finish or be cancelled first.
+            ShaPrint 将移除并重新安装 {repairTarget?.queue_name}。Windows 将请求
+            管理员权限，并可能重置该打印机的本地打印偏好。
+            请先完成或取消待处理的打印任务。
           </DialogDescription>
         </DialogHeader>
         {repairError ? (
@@ -342,10 +342,10 @@ export function InstalledClientQueuesPanel({
               setRepairError(null);
             }}
           >
-            Cancel
+            取消
           </Button>
           <Button type="button" disabled={repairing} onClick={() => void handleRepair()}>
-            {repairing ? "Repairing…" : "Repair queue"}
+            {repairing ? "正在修复…" : "修复队列"}
           </Button>
         </DialogFooter>
       </Dialog>

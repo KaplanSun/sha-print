@@ -35,25 +35,25 @@ import {
 import "./App.css";
 
 const NAV_ITEMS = [
-  { id: "my-printers", label: "My printers", icon: Printer },
-  { id: "share", label: "Share printers", icon: Network },
-  { id: "settings", label: "Settings", icon: Settings2 },
+  { id: "my-printers", label: "我的打印机", icon: Printer },
+  { id: "share", label: "共享打印机", icon: Network },
+  { id: "settings", label: "设置", icon: Settings2 },
 ] as const;
 
 type PageId = (typeof NAV_ITEMS)[number]["id"];
 
 const PAGE_CONTENT: Record<PageId, { title: string; description: string }> = {
   "my-printers": {
-    title: "My printers",
-    description: "Printers available to your apps through ShaPrint.",
+    title: "我的打印机",
+    description: "你的应用通过 ShaPrint 可以使用的打印机。",
   },
   share: {
-    title: "Share printers",
-    description: "Choose the printers this computer makes available over the network.",
+    title: "共享打印机",
+    description: "选择本机要在网络上共享的打印机。",
   },
   settings: {
-    title: "Settings",
-    description: "Set the Network Channel, startup behavior, and print services.",
+    title: "设置",
+    description: "设置网络通道、启动行为与打印服务。",
   },
 };
 
@@ -91,21 +91,21 @@ function App() {
   const hasRunningPath = clientProxyState === "running" || serverSharingState === "running";
   const statusLabel = isUnreachable
     ? controlMode === "machine"
-      ? "Machine daemon unavailable"
-      : "Runtime unavailable"
+      ? "机器守护进程不可用"
+      : "运行时不可用"
     : hasFailedService
-      ? "Service needs attention"
+      ? "服务需要处理"
       : isTransitioning
-        ? "Service changing"
+        ? "服务切换中"
         : runtime.status === null
-          ? "Checking services"
+          ? "正在检查服务"
           : clientProxyState === "running" && serverSharingState === "running"
-            ? "Client + server ready"
+            ? "客户端与服务端就绪"
             : clientProxyState === "running"
-              ? "Client printing ready"
+              ? "客户端打印就绪"
               : serverSharingState === "running"
-                ? "Server sharing on"
-                : "Print paths stopped";
+                ? "服务端共享已开启"
+                : "打印通道已停止";
   const statusTone =
     isUnreachable || hasFailedService
       ? "problem"
@@ -117,7 +117,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar" aria-label="ShaPrint navigation">
+      <aside className="sidebar" aria-label="ShaPrint 导航">
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true">
             <Printer size={19} strokeWidth={2.2} />
@@ -135,13 +135,13 @@ function App() {
               )}
             </span>
             <span className="brand-caption">
-              {isNightlyBuild ? `Nightly preview (v${currentAppVersion})` : "Print sharing"}
+              {isNightlyBuild ? `Nightly 预览版 (v${currentAppVersion})` : "打印共享"}
             </span>
           </span>
         </div>
 
-        <nav className="primary-nav" aria-label="Primary navigation">
-          <p className="nav-heading">Workspace</p>
+        <nav className="primary-nav" aria-label="主导航">
+          <p className="nav-heading">工作区</p>
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
             <Button
               key={id}
@@ -160,7 +160,7 @@ function App() {
 
         <div className="sidebar-note">
           <span className="sidebar-note-rule" aria-hidden="true" />
-          <p>Print from the dialog you already use.</p>
+          <p>从你常用的打印对话框直接打印。</p>
         </div>
       </aside>
 
@@ -169,15 +169,15 @@ function App() {
           <div
             className="nightly-top-bar flex items-center justify-between px-4 py-1.5 border-b text-xs font-medium bg-amber-500/10 border-amber-500/25 text-amber-950 dark:text-amber-200"
             role="status"
-            aria-label="Nightly preview build notice"
+            aria-label="Nightly 预览版构建提示"
           >
             <div className="flex items-center gap-2">
               <FlaskConical size={14} className="text-amber-600 dark:text-amber-400 shrink-0" aria-hidden="true" />
               <span>
-                <strong className="font-semibold">ShaPrint Nightly</strong> (v{currentAppVersion}) &bull; Experimental tester channel
+                <strong className="font-semibold">ShaPrint Nightly</strong> (v{currentAppVersion}) &bull; 实验性测试通道
               </span>
             </div>
-            <span className="text-[11px] font-medium opacity-80 hidden sm:inline">Pre-release Test Build</span>
+            <span className="text-[11px] font-medium opacity-80 hidden sm:inline">预发布测试版</span>
           </div>
         )}
         <header className="workspace-header">
@@ -192,8 +192,8 @@ function App() {
               onClick={() => setDiagnosticsOpen(true)}
               className="system-status-pill"
               data-tone={statusTone}
-              title="Open service diagnostics"
-              aria-label={`${statusLabel}. Open service diagnostics`}
+              title="打开服务诊断"
+              aria-label={`${statusLabel}。打开服务诊断`}
             >
               <span className={`status-dot dot-${statusTone}`} aria-hidden="true" />
               <span className="status-label">{statusLabel}</span>
@@ -256,11 +256,11 @@ function App() {
                   <div className="channel-reminder" role="status">
                     <ShieldAlert size={18} aria-hidden="true" />
                     <div>
-                      <strong>Set a Network Channel before clients can print.</strong>
-                      <p>This shared value authorizes print jobs between your ShaPrint installations.</p>
+                      <strong>设置网络通道后客户端才能打印。</strong>
+                      <p>该共享密钥用于在你的 ShaPrint 设备之间授权打印任务。</p>
                     </div>
                     <Button type="button" variant="outline" onClick={() => setPage("settings")}>
-                      Set up
+                      去设置
                     </Button>
                   </div>
                 ) : null}
@@ -285,7 +285,7 @@ function App() {
         </div>
 
         <footer className="workspace-footer">
-          Documents stay on your devices. ShaPrint never displays or logs print-job content.
+          文档保存在你的设备上。ShaPrint 永不显示或记录打印任务内容。
         </footer>
       </main>
 
@@ -335,14 +335,14 @@ function App() {
           setPage("settings");
         }}
       /> : null}
-      {requestedTroubleshootingTarget ? <div role="alertdialog" aria-label="Switch troubleshooting printer" className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/55">
+      {requestedTroubleshootingTarget ? <div role="alertdialog" aria-label="切换故障排查打印机" className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/55">
         <div className="rounded-md border bg-card p-6 text-card-foreground">
-          <p>Close the current troubleshooting session before checking {requestedTroubleshootingTarget.queue_name}?</p>
-          <Button variant="outline" onClick={() => setRequestedTroubleshootingTarget(null)}>Keep current session</Button>
+          <p>关闭当前故障排查会话后再检查 {requestedTroubleshootingTarget.queue_name}？</p>
+          <Button variant="outline" onClick={() => setRequestedTroubleshootingTarget(null)}>保留当前会话</Button>
           <Button onClick={() => {
             setTroubleshootingTarget(requestedTroubleshootingTarget);
             setRequestedTroubleshootingTarget(null);
-          }}>Close and switch</Button>
+          }}>关闭并切换</Button>
         </div>
       </div> : null}
     </div>

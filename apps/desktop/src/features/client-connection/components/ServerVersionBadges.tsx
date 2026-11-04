@@ -17,7 +17,7 @@ export function ServerVersionBadges({ version }: ServerVersionBadgesProps) {
       ) : null}
       {drift.hasDrift ? (
         <Badge variant="warning" className="text-[10px] version-drift-badge" role="status">
-          {drift.message ?? "Version drift"}
+          {drift.message ?? "版本漂移"}
         </Badge>
       ) : null}
     </>

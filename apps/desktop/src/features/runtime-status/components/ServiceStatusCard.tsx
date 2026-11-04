@@ -6,25 +6,25 @@ import { Button } from "@/components/ui/button";
 /** User-facing name and purpose of each supervised service. */
 const SERVICE_LABELS: Partial<Record<ServiceId, { title: string; description: string }>> = {
   "client-proxy": {
-    title: "Client proxy",
-    description: "Forwards print jobs from your installed queues to a trusted server.",
+    title: "客户端代理",
+    description: "将你已安装队列的打印任务转发到受信任的服务器。",
   },
   "server-sharing": {
-    title: "Server sharing",
-    description: "Shares the local printer queues you selected with other ShaPrint users.",
+    title: "服务器共享",
+    description: "将你选择的本地打印机队列共享给其他 ShaPrint 用户。",
   },
   "server-discovery": {
-    title: "Server discovery",
-    description: "Finds ShaPrint servers on this network so you can review and connect to them.",
+    title: "服务器发现",
+    description: "在此网络上查找 ShaPrint 服务器，以便你复核并连接。",
   },
 };
 
 const STATE_LABELS: Record<ServiceState, string> = {
-  stopped: "Stopped",
-  starting: "Starting",
-  running: "Running",
-  stopping: "Stopping",
-  failed: "Failed",
+  stopped: "已停止",
+  starting: "启动中",
+  running: "运行中",
+  stopping: "停止中",
+  failed: "失败",
 };
 
 const STATE_VARIANTS: Record<ServiceState, NonNullable<BadgeProps["variant"]>> = {
@@ -59,9 +59,9 @@ export function ServiceStatusCard({ service, busy, onStart, onStop }: ServiceSta
   const controls = CONTROLS[service.state];
   const recovery = printRecovery(service);
   const startLabel =
-    service.state === "starting" || (busy && service.state === "stopped") ? "Starting…" : "Start";
+    service.state === "starting" || (busy && service.state === "stopped") ? "启动中…" : "启动";
   const stopLabel =
-    service.state === "stopping" || (busy && service.state === "running") ? "Stopping…" : "Stop";
+    service.state === "stopping" || (busy && service.state === "running") ? "停止中…" : "停止";
 
   return (
     <section
@@ -84,7 +84,7 @@ export function ServiceStatusCard({ service, busy, onStart, onStop }: ServiceSta
 
       {recovery ? (
         <p className="service-recovery" role="status">
-          <span className="service-recovery-label">Printing affected</span>
+          <span className="service-recovery-label">打印受影响</span>
           {recovery}
         </p>
       ) : null}

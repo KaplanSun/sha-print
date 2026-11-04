@@ -9,10 +9,10 @@ import { buildTroubleshootingReport, CHECK_LABELS, actionLabel, actionOutcomeLab
 import { CLIENT_VERSION } from "@/lib/version";
 
 const SYMPTOM_GUIDANCE: Record<UserSymptom, string> = {
-  clipping: "Compare Requested media with Loaded media in the printer tray and Server queue. Inspect printable margins and the outer border patterns (2 mm, 5 mm, 10 mm) on the diagnostic page. This symptom guides investigation and does not prove a hardware fault.",
-  shifted: "Compare Requested media with Loaded media and check the paper alignment guides in the printer tray. Inspect the 50 mm center alignment cross on the diagnostic page. This symptom guides investigation and does not prove an alignment fault.",
-  "incorrect-size": "Compare Requested media with Loaded media in the printer tray and Server queue settings. Inspect page scaling and paper dimensions. This symptom guides investigation and does not prove a scaling fault.",
-  blank: "Check the printer's ink, toner, or ribbon supplies and printhead condition. Try printing a native test page directly on the Server. Local acceptance confirms only spooler submission, not marking agent transfer. This symptom guides investigation and does not prove a communication fault.",
+  clipping: "将“请求介质”与打印机纸盒及服务器队列中的“已装载介质”进行对比。检查诊断页上的可打印边距与外边框图案（2 毫米、5 毫米、10 毫米）。此症状用于引导排查，不构成硬件故障的结论。",
+  shifted: "将“请求介质”与“已装载介质”进行对比，并检查打印机纸盒中的纸张对齐导轨。检查诊断页上 50 毫米的中心对齐十字。此症状用于引导排查，不构成对齐故障的结论。",
+  "incorrect-size": "将“请求介质”与打印机纸盒及服务器队列设置中的“已装载介质”进行对比。检查页面缩放与纸张尺寸。此症状用于引导排查，不构成缩放故障的结论。",
+  blank: "检查打印机的墨盒、碳粉或色带耗材及打印头状态。尝试在服务器上直接打印本机测试页。本地接受仅确认假脱机已提交，不能确认标记引擎已传输。此症状用于引导排查，不构成通信故障的结论。",
 };
 
 function classifyActionOutcome(error: unknown): "denied" | "failed" | "partial" {
@@ -83,7 +83,7 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
         attempted_actions: [...attemptedActionsRef.current],
         checks: Object.keys(CHECK_LABELS).map((check) => ({
           check, status: "inconclusive", code: "timeout",
-          detail: "This check could not be completed within 15 seconds. Its result is unknown.",
+          detail: "此检查未能在 15 秒内完成。其结果未知。",
         })),
       });
     }, 15_000);
@@ -230,19 +230,19 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}
       ariaLabelledBy="troubleshoot-title" ariaDescribedBy="troubleshoot-description">
       <DialogHeader>
-        <DialogTitle id="troubleshoot-title">Troubleshoot printer</DialogTitle>
+        <DialogTitle id="troubleshoot-title">故障排查打印机</DialogTitle>
         <DialogDescription id="troubleshoot-description">
-          Check this Client queue without printing or changing your configuration.
+          检查此客户端队列，无需打印或更改配置。
         </DialogDescription>
       </DialogHeader>
       <dl className="text-sm space-y-1 mb-4">
-        <div><dt className="inline font-semibold">Client queue: </dt><dd className="inline">{target.queue_name}</dd></div>
-        <div><dt className="inline font-semibold">Shared printer: </dt><dd className="inline">{target.printer_name}</dd></div>
-        <div><dt className="inline font-semibold">Server: </dt><dd className="inline">{target.server_address}</dd></div>
+        <div><dt className="inline font-semibold">客户端队列：</dt><dd className="inline">{target.queue_name}</dd></div>
+        <div><dt className="inline font-semibold">共享打印机：</dt><dd className="inline">{target.printer_name}</dd></div>
+        <div><dt className="inline font-semibold">服务器：</dt><dd className="inline">{target.server_address}</dd></div>
       </dl>
       <div aria-live="polite">
-        {!snapshot && !error ? <p role="status">Checking the local print path. Available results appear within 15 seconds.</p> : null}
-        {error ? <p role="alert">Local checks could not be completed. The queue state is unknown, so testing and repair remain blocked. Check ShaPrint and try again.</p> : null}
+        {!snapshot && !error ? <p role="status">正在检查本地打印链路。结果将在 15 秒内显示。</p> : null}
+        {error ? <p role="alert">本地检查无法完成。队列状态未知，因此测试与修复仍被阻止。请检查 ShaPrint 后重试。</p> : null}
         {snapshot ? <>
           <ul className="space-y-3">
             {snapshot.checks.map((check) => (
@@ -264,7 +264,7 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                       disabled={isExecutingAction}
                       onClick={() => void handleStartProxy()}
                     >
-                      Start client proxy
+                      启动客户端代理
                     </Button>
                   </div>
                 ) : null}
@@ -278,7 +278,7 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                       disabled={isExecutingAction}
                       onClick={() => void handleRepairQueue()}
                     >
-                      Repair Client queue
+                      修复客户端队列
                     </Button>
                   </div>
                 ) : null}
@@ -293,7 +293,7 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                       className="text-xs h-7"
                       onClick={() => onReviewServer(target.server_address)}
                     >
-                      Review server identity
+                      复核服务器身份
                     </Button>
                   </div>
                 ) : null}
@@ -308,7 +308,7 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                       className="text-xs h-7"
                       onClick={onConfigureNetworkChannel}
                     >
-                      Network Channel settings
+                      网络通道设置
                     </Button>
                   </div>
                 ) : null}
@@ -316,46 +316,46 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
             ))}
           </ul>
           {snapshot.session_id !== undefined ? (
-            <section className="mt-4 space-y-3 rounded-md border p-3 text-sm" aria-label="Guided test print">
-              <p>Requested media: {snapshot.requested_media ?? "Unavailable"}</p>
-              <p>One page, one copy, grayscale, one-sided. Saved queue defaults stay unchanged.</p>
-              {snapshot.attempted_actions.some((action) => action.action === "send-test-print" || action.action === "retry-test-print") || snapshot.submission === "uncertain" ? <p>Before another send, check again and confirm the Client queue is empty. Empty local queue state does not establish downstream cancellation. Earlier work may still print downstream even when this queue is empty. A retry sends another page.</p> : null}
+            <section className="mt-4 space-y-3 rounded-md border p-3 text-sm" aria-label="引导式测试打印">
+              <p>请求介质：{snapshot.requested_media ?? "不可用"}</p>
+              <p>一页、一份、灰度、单面。已保存的队列默认值保持不变。</p>
+              {snapshot.attempted_actions.some((action) => action.action === "send-test-print" || action.action === "retry-test-print") || snapshot.submission === "uncertain" ? <p>再次发送前，请先重新检查并确认客户端队列为空。本地队列为空并不代表下游已取消。即使此队列为空，之前的任务仍可能在下游打印。重试会再发送一页。</p> : null}
               <Button type="button" disabled={!snapshot.test_print_enabled || isExecutingAction} onClick={() => void handleTestAction()}>
-                {snapshot.attempted_actions.some((action) => action.action === "send-test-print" || action.action === "retry-test-print") ? "Retry test print" : "Send test print"}
+                {snapshot.attempted_actions.some((action) => action.action === "send-test-print" || action.action === "retry-test-print") ? "重试测试打印" : "发送测试打印"}
               </Button>
-              {testActionPending ? <p role="status">Checking prerequisites and submitting. Do not send again.</p> : null}
-              {testError ? <p role="alert">The result could not be confirmed. Inspect the native queue before checking again. No automatic retry was sent.</p> : null}
-              {snapshot.submission === "accepted" ? <p>The native spooler accepted the test print. Physical output is unconfirmed until you respond.</p> : null}
-              {snapshot.submission === "uncertain" ? <p>Submission is uncertain. The print job may still print. Physical output is unconfirmed until you respond. Do not assume that a timeout cancelled it.</p> : null}
-              {snapshot.submission === "rejected" ? <p>The test print was rejected before a document was submitted. Inspect the native queue and its printing preferences, then check again.</p> : null}
-              {snapshot.submission === "blocked" ? <p>Prerequisites changed. No test print was sent. Review the fresh checks and Requested media, then check again.</p> : null}
+              {testActionPending ? <p role="status">正在检查前置条件并提交。请勿再次发送。</p> : null}
+              {testError ? <p role="alert">无法确认结果。再次检查前请先检查本机队列。未自动重试发送。</p> : null}
+              {snapshot.submission === "accepted" ? <p>本机假脱机已接受测试打印。在您确认之前，物理输出仍未确认。</p> : null}
+              {snapshot.submission === "uncertain" ? <p>提交状态不确定。打印任务可能仍在打印。在您确认之前，物理输出仍未确认。请勿认为超时已将其取消。</p> : null}
+              {snapshot.submission === "rejected" ? <p>测试打印在提交文档前被拒绝。请检查本机队列及其打印偏好，然后再次检查。</p> : null}
+              {snapshot.submission === "blocked" ? <p>前置条件已变化。未发送测试打印。请查看新的检查结果与请求介质，然后再次检查。</p> : null}
               {snapshot.submission === "accepted" || snapshot.submission === "uncertain" ? <>
-                <p>What happened to the diagnostic page? Wait for delayed output before answering.</p>
+                <p>诊断页发生了什么？请在回答前等待延迟输出。</p>
                 <div className="flex flex-wrap gap-2">
-                  <Button type="button" disabled={isExecutingAction} onClick={() => void handleTestAction("correct")}>Printed correctly</Button>
-                  <Button type="button" variant="outline" disabled={isExecutingAction} onClick={() => void handleTestAction("no-output")}>No output</Button>
-                  <Button type="button" variant="outline" disabled={isExecutingAction} onClick={() => void handleTestAction("incorrect")}>Incorrect output</Button>
+                  <Button type="button" disabled={isExecutingAction} onClick={() => void handleTestAction("correct")}>打印正确</Button>
+                  <Button type="button" variant="outline" disabled={isExecutingAction} onClick={() => void handleTestAction("no-output")}>无输出</Button>
+                  <Button type="button" variant="outline" disabled={isExecutingAction} onClick={() => void handleTestAction("incorrect")}>输出不正确</Button>
                 </div>
               </> : null}
-              {snapshot.physical_result === "correct" ? <p>You confirmed correct physical output.</p> : null}
-              {snapshot.physical_result === "no-output" ? <p>You reported no output. Local spooler acceptance confirms only that work entered the local queue; it does not confirm whether the print job reached the Server or the physical printer. Inspect the native Client queue for pending work, check ShaPrint on the Server, and inspect the physical printer&apos;s status and paper tray. Wait for delayed output before sending again, as an earlier print job may still produce a page.</p> : null}
+              {snapshot.physical_result === "correct" ? <p>您已确认物理输出正确。</p> : null}
+              {snapshot.physical_result === "no-output" ? <p>您报告无输出。本地假脱机接受仅确认任务进入了本地队列，不能确认打印任务是否到达服务器或物理打印机。请检查本机客户端队列中的待处理任务、服务器上的 ShaPrint，并检查物理打印机的状态与纸盒。在再次发送前请等待延迟输出，因为之前的打印任务仍可能产生一页。</p> : null}
               {snapshot.physical_result === "incorrect" ? <>
-                <label className="block">Observed symptom
-                  <select aria-label="Observed symptom" value={symptom} onChange={(event) => handleSymptomChange(event.target.value as UserSymptom | "")} disabled={isExecutingAction} className="block border rounded p-2">
-                    <option value="">Choose a symptom</option>
-                    <option value="clipping">Clipping</option><option value="shifted">Shifted position</option>
-                    <option value="incorrect-size">Incorrect size</option><option value="blank">Blank output</option>
+                <label className="block">观察到的症状
+                  <select aria-label="观察到的症状" value={symptom} onChange={(event) => handleSymptomChange(event.target.value as UserSymptom | "")} disabled={isExecutingAction} className="block border rounded p-2">
+                    <option value="">选择症状</option>
+                    <option value="clipping">裁切</option><option value="shifted">位置偏移</option>
+                    <option value="incorrect-size">尺寸不正确</option><option value="blank">空白输出</option>
                   </select>
                 </label>
                 {symptom ? <p>{SYMPTOM_GUIDANCE[symptom]}</p> : null}
               </> : null}
             </section>
           ) : null}
-          {!snapshot.queue_empty ? <p className="mt-3 text-sm">Testing and repair are blocked until this Client queue is known to be empty.</p> : null}
-          <p className="mt-3 text-sm text-muted-foreground">To inspect pending work, open Windows Settings &gt; Printers &amp; scanners &gt; your printer &gt; Open print queue, or your Linux desktop&apos;s printer queue. Wait for jobs to finish or manage them there.</p>
+          {!snapshot.queue_empty ? <p className="mt-3 text-sm">在此客户端队列确认为空之前，测试与修复均被阻止。</p> : null}
+          <p className="mt-3 text-sm text-muted-foreground">若要查看待处理任务，请打开“Windows 设置 &gt; 打印机和扫描仪 &gt; 你的打印机 &gt; 打开打印队列”，或打开你 Linux 桌面上的打印机队列。等待任务完成，或在其中管理。</p>
           {snapshot.attempted_actions.length > 0 ? (
-            <div className="mt-4 rounded-md border p-3 text-sm bg-muted/40" aria-label="Attempted recovery actions">
-              <h4 className="font-semibold mb-2">Attempted recovery actions</h4>
+            <div className="mt-4 rounded-md border p-3 text-sm bg-muted/40" aria-label="已尝试的恢复操作">
+              <h4 className="font-semibold mb-2">已尝试的恢复操作</h4>
               <ul className="space-y-1">
                 {snapshot.attempted_actions.map((item, idx) => (
                   <li key={idx} className="flex justify-between items-center text-xs">
@@ -365,11 +365,11 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                 ))}
               </ul>
               <p className="mt-2 text-xs text-muted-foreground">
-                Attempted recovery actions do not claim physical printing is restored.
+                已尝试的恢复操作并不代表物理打印已恢复。
               </p>
             </div>
           ) : null}
-          <div className="mt-4 rounded-md border p-3 text-sm bg-muted/40" aria-label="Troubleshooting report">
+          <div className="mt-4 rounded-md border p-3 text-sm bg-muted/40" aria-label="故障排查报告">
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
@@ -379,7 +379,7 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                 aria-expanded={reportOpen}
                 onClick={() => setReportOpen((open) => !open)}
               >
-                {reportOpen ? "Hide report" : "Preview report"}
+                {reportOpen ? "隐藏报告" : "预览报告"}
               </Button>
               {reportOpen ? (
                 <Button
@@ -388,7 +388,7 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                   className="text-xs h-7"
                   onClick={() => void handleCopyReport()}
                 >
-                  Copy report
+                  复制报告
                 </Button>
               ) : null}
             </div>
@@ -398,22 +398,22 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
                   {buildTroubleshootingReport(snapshot)}
                 </pre>
                 {copyState === "copied" ? (
-                  <p role="status" className="mt-2 text-xs">Report copied to the clipboard.</p>
+                  <p role="status" className="mt-2 text-xs">报告已复制到剪贴板。</p>
                 ) : null}
                 {copyState === "failed" ? (
-                  <p role="alert" className="mt-2 text-xs">Copy failed. Select the report text above and copy it manually.</p>
+                  <p role="alert" className="mt-2 text-xs">复制失败。请选中上方报告文本并手动复制。</p>
                 ) : null}
               </>
             ) : null}
           </div>
           {isExecutingAction && !testActionPending ? (
             <p className="mt-2 text-xs text-muted-foreground" role="status">
-              Performing recovery action...
+              正在执行恢复操作…
             </p>
           ) : null}
         </> : null}
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">Checks show only observed evidence and do not confirm physical output. Closing discards this session and does not cancel submitted print jobs. Manage cancellation in the native OS queue. Local cancellation may not stop work already forwarded to the Server or printer.</p>
+      <p className="mt-3 text-xs text-muted-foreground">检查仅展示已观察到的证据，不确认物理输出。关闭将丢弃本次会话，且不会取消已提交的打印任务。请在系统原生队列中管理取消操作。本地取消可能无法停止已转发到服务器或打印机的任务。</p>
       <div className="flex justify-end gap-2 mt-4">
         <Button
           type="button"
@@ -421,9 +421,9 @@ export function LocalTroubleshootingDialog({ target, onClose, onReviewServer, on
           disabled={isExecutingAction}
           onClick={() => setRun((value) => value + 1)}
         >
-          Check again
+          再次检查
         </Button>
-        <Button type="button" onClick={onClose}>Close troubleshooting</Button>
+        <Button type="button" onClick={onClose}>关闭故障排查</Button>
       </div>
     </Dialog>
   );

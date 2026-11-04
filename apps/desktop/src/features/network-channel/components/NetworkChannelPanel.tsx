@@ -35,16 +35,16 @@ export function NetworkChannelPanel({ settings }: NetworkChannelPanelProps) {
           <div>
             <div className="flex items-center gap-2">
               <h2 id="network-channel-heading" className="text-base font-semibold leading-none">
-                Print authorization
+                打印授权
               </h2>
               {configured !== null && (
                 <Badge variant={configured ? "success" : "warning"} className="text-[10px]">
-                  {configured ? "Configured" : "Not set"}
+                  {configured ? "已配置" : "未设置"}
                 </Badge>
               )}
             </div>
             <p className="hint text-xs mt-1 text-muted-foreground">
-              Used by the client and server to authorize print jobs.
+              客户端与服务器用它来授权打印任务。
             </p>
           </div>
         </div>
@@ -58,16 +58,16 @@ export function NetworkChannelPanel({ settings }: NetworkChannelPanelProps) {
           className="text-xs h-8"
         >
           <RefreshCw size={13} className={saving ? "animate-spin mr-1" : "mr-1"} />
-          Refresh
+          刷新
         </Button>
       </div>
 
       <p className="hint text-xs text-muted-foreground leading-relaxed">
         {configured === null
-          ? "Checking Network Channel status…"
+          ? "正在检查网络通道状态…"
           : configured
-            ? "Configured. Enter a new value to replace it; the saved value is never shown."
-            : "Set a Network Channel before clients can submit print jobs."}
+            ? "已配置。输入新值可替换它；已保存的值永远不会显示。"
+            : "在客户端提交打印任务前，请先设置网络通道。"}
       </p>
 
       {error ? (
@@ -78,22 +78,22 @@ export function NetworkChannelPanel({ settings }: NetworkChannelPanelProps) {
       ) : null}
       {saved ? (
         <p className="channel-saved" role="status">
-          Network Channel updated. The saved value has been cleared from this form.
+          网络通道已更新。已保存的值已从本表单中清除。
         </p>
       ) : null}
 
       <form onSubmit={(event) => void submit(event)} className="network-channel-form space-y-3 pt-1">
         <div className="space-y-1.5">
           <label htmlFor="network-channel" className="text-xs font-semibold text-foreground block">
-            Network Channel
+            网络通道
           </label>
           <div className="flex flex-col sm:flex-row gap-2">
             <PasswordInput
               id="network-channel"
               name="network-channel"
-              visibilityLabel="Network Channel"
+              visibilityLabel="网络通道"
               autoComplete="new-password"
-              placeholder="Enter the shared Network Channel"
+              placeholder="输入共享的网络通道"
               value={value}
               onChange={(event) => setValue(event.currentTarget.value)}
               required
@@ -105,13 +105,13 @@ export function NetworkChannelPanel({ settings }: NetworkChannelPanelProps) {
               disabled={saving || value.trim().length === 0}
               className="text-xs h-9 px-4 shrink-0 font-medium"
             >
-              {saving ? "Saving…" : "Save Network Channel"}
+              {saving ? "正在保存…" : "保存网络通道"}
             </Button>
           </div>
         </div>
 
         <p className="hint text-[11px] text-muted-foreground">
-          Both client and server must use the same channel to authorize print jobs.
+          客户端与服务器必须使用相同的通道才能授权打印任务。
         </p>
       </form>
     </section>

@@ -20,9 +20,9 @@ export function RuntimeStatusPanel({ runtime, controlMode = "local" }: RuntimeSt
     <Card className="panel feature-panel runtime-panel" aria-labelledby="services-heading">
       <div className="panel-header">
         <div>
-          <h2 id="services-heading">Print services</h2>
+          <h2 id="services-heading">打印服务</h2>
           <p className="hint">
-            The client proxy carries your installed queues. Server sharing stays off until you start it.
+            客户端代理承载你已安装的队列。服务器共享在你启动之前保持关闭。
           </p>
         </div>
         <Button
@@ -33,7 +33,7 @@ export function RuntimeStatusPanel({ runtime, controlMode = "local" }: RuntimeSt
           disabled={busy !== null}
         >
           <RefreshCw size={15} aria-hidden="true" />
-          Refresh
+          刷新
         </Button>
       </div>
 
@@ -42,7 +42,7 @@ export function RuntimeStatusPanel({ runtime, controlMode = "local" }: RuntimeSt
           <span className="banner-code">{error.code}</span>
           <span className="banner-message">{error.message}</span>
           <Button type="button" variant="ghost" size="sm" onClick={dismissError}>
-            Dismiss
+            忽略
           </Button>
         </p>
       ) : null}
@@ -50,13 +50,13 @@ export function RuntimeStatusPanel({ runtime, controlMode = "local" }: RuntimeSt
       {unreachable ? (
         <p className="runtime-unreachable" role="alert">
           {controlMode === "machine"
-            ? "The machine daemon is not reachable, so its print services are stopped. Start the system service (sudo systemctl start shaprintd), then refresh."
-            : "The ShaPrint runtime is not reachable from this window. Reopen the desktop app to see and control its services."}
+            ? "机器守护进程不可达，因此其打印服务已停止。请启动系统服务（sudo systemctl start shaprintd），然后刷新。"
+            : "此窗口无法连接到 ShaPrint 运行时。请重新打开桌面应用以查看并控制其服务。"}
         </p>
       ) : null}
 
       {status === null && !unreachable ? (
-        <p className="hint" role="status">Reading service status…</p>
+        <p className="hint" role="status">正在读取服务状态…</p>
       ) : null}
 
       {status ? (

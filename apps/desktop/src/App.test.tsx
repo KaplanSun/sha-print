@@ -128,7 +128,7 @@ function serviceCard(container: HTMLElement, id: string): HTMLElement {
   return card as HTMLElement;
 }
 
-type WorkspacePage = "My printers" | "Share printers" | "Settings";
+type WorkspacePage = "我的打印机" | "共享打印机" | "设置";
 
 function navigateTo(page: WorkspacePage) {
   fireEvent.click(screen.getByRole("button", { name: page }));
@@ -144,9 +144,9 @@ function printerRow(container: HTMLElement, name: string): HTMLElement {
 
 /** Waits until the sharing panel has listed the queues. */
 async function sharingPanel(container: HTMLElement): Promise<HTMLElement> {
-  navigateTo("Share printers");
+  navigateTo("共享打印机");
   await waitFor(() => expect(printerRow(container, "HP LaserJet")).toBeTruthy());
-  return screen.getByRole("region", { name: "Local printers" });
+  return screen.getByRole("region", { name: "本地打印机" });
 }
 
 // Testing Library only cleans up automatically when Vitest globals are turned on; this suite
@@ -225,11 +225,11 @@ it("opens passive troubleshooting for an installed Client queue without offering
     ],
   });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: `Troubleshoot ${target.queue_name}` }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: `对 ${target.queue_name} 进行故障排查` }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
   expect(await within(dialog).findByText(/Print jobs are pending/)).toBeTruthy();
   expect(within(dialog).getByText(target.server_address)).toBeTruthy();
-  expect(within(dialog).getByRole("button", { name: "Check again" })).toBeTruthy();
+  expect(within(dialog).getByRole("button", { name: "再次检查" })).toBeTruthy();
   expect(within(dialog).queryByRole("button", { name: /test print|repair|start/i })).toBeNull();
   expect(vi.mocked(invoke).mock.calls.map(([command]) => command)).toEqual(["inspect_local_client_queue"]);
 });
@@ -277,18 +277,18 @@ it("offers Start client proxy when proxy check failed and records outcome after 
   } as any);
 
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: `Troubleshoot ${target.queue_name}` }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: `对 ${target.queue_name} 进行故障排查` }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
 
-  const startProxyBtn = await within(dialog).findByRole("button", { name: "Start client proxy" });
+  const startProxyBtn = await within(dialog).findByRole("button", { name: "启动客户端代理" });
   expect(startProxyBtn).toBeTruthy();
 
   fireEvent.click(startProxyBtn);
 
   expect(ipc.startService).toHaveBeenCalledWith("client-proxy");
-  expect(await within(dialog).findByText("Attempted recovery actions")).toBeTruthy();
-  expect(within(dialog).getByText("Start client proxy")).toBeTruthy();
-  expect(within(dialog).getByText("Succeeded")).toBeTruthy();
+  expect(await within(dialog).findByText("已尝试的恢复操作")).toBeTruthy();
+  expect(within(dialog).getByText("启动客户端代理")).toBeTruthy();
+  expect(within(dialog).getByText("成功")).toBeTruthy();
 });
 
 it("offers Repair Client queue when repair is eligible and records successful outcome", async () => {
@@ -334,17 +334,17 @@ it("offers Repair Client queue when repair is eligible and records successful ou
   } as any);
 
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: `Troubleshoot ${target.queue_name}` }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: `对 ${target.queue_name} 进行故障排查` }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
 
-  const repairBtn = await within(dialog).findByRole("button", { name: "Repair Client queue" });
+  const repairBtn = await within(dialog).findByRole("button", { name: "修复客户端队列" });
   fireEvent.click(repairBtn);
 
   expect(serverConnections.repairPrinterQueue).toHaveBeenCalledWith(target.server_address, target.printer_name);
-  const attemptedList = await within(dialog).findByLabelText("Attempted recovery actions");
-  expect(within(attemptedList).getByText("Repair Client queue")).toBeTruthy();
-  expect(within(attemptedList).getByText("Succeeded")).toBeTruthy();
-  expect(within(dialog).getByText(/Attempted recovery actions do not claim physical printing is restored/)).toBeTruthy();
+  const attemptedList = await within(dialog).findByLabelText("已尝试的恢复操作");
+  expect(within(attemptedList).getByText("修复客户端队列")).toBeTruthy();
+  expect(within(attemptedList).getByText("成功")).toBeTruthy();
+  expect(within(dialog).getByText(/已尝试的恢复操作并不代表物理打印已恢复/)).toBeTruthy();
 });
 
 it("records denied outcome when repair elevation prompt is dismissed or rejected", async () => {
@@ -389,15 +389,15 @@ it("records denied outcome when repair elevation prompt is dismissed or rejected
   });
 
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: `Troubleshoot ${target.queue_name}` }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: `对 ${target.queue_name} 进行故障排查` }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
 
-  const repairBtn = await within(dialog).findByRole("button", { name: "Repair Client queue" });
+  const repairBtn = await within(dialog).findByRole("button", { name: "修复客户端队列" });
   fireEvent.click(repairBtn);
 
-  const attemptedList = await within(dialog).findByLabelText("Attempted recovery actions");
-  expect(within(attemptedList).getByText("Repair Client queue")).toBeTruthy();
-  expect(within(attemptedList).getByText("Authorization denied")).toBeTruthy();
+  const attemptedList = await within(dialog).findByLabelText("已尝试的恢复操作");
+  expect(within(attemptedList).getByText("修复客户端队列")).toBeTruthy();
+  expect(within(attemptedList).getByText("授权被拒绝")).toBeTruthy();
 });
 
 it("records denied outcome when error is a primitive string indicating permission denied", async () => {
@@ -441,15 +441,15 @@ it("records denied outcome when error is a primitive string indicating permissio
   );
 
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: `Troubleshoot ${target.queue_name}` }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: `对 ${target.queue_name} 进行故障排查` }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
 
-  const repairBtn = await within(dialog).findByRole("button", { name: "Repair Client queue" });
+  const repairBtn = await within(dialog).findByRole("button", { name: "修复客户端队列" });
   fireEvent.click(repairBtn);
 
-  const attemptedList = await within(dialog).findByLabelText("Attempted recovery actions");
-  expect(within(attemptedList).getByText("Repair Client queue")).toBeTruthy();
-  expect(within(attemptedList).getByText("Authorization denied")).toBeTruthy();
+  const attemptedList = await within(dialog).findByLabelText("已尝试的恢复操作");
+  expect(within(attemptedList).getByText("修复客户端队列")).toBeTruthy();
+  expect(within(attemptedList).getByText("授权被拒绝")).toBeTruthy();
 });
 
 it.each(["success", "failure"] as const)("finalizes inconclusive results at the UI deadline and ignores late %s", async (outcome) => {
@@ -460,23 +460,23 @@ it.each(["success", "failure"] as const)("finalizes inconclusive results at the 
     finishLate = (value) => outcome === "success" ? resolve(value) : reject(new Error("native-driver-detail"));
   }));
   render(<App />);
-  const open = await screen.findByRole("button", { name: "Troubleshoot Office" });
+  const open = await screen.findByRole("button", { name: "对 Office 进行故障排查" });
   vi.useFakeTimers();
   try {
     fireEvent.click(open);
     await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });
-    const dialog = screen.getByRole("dialog", { name: "Troubleshoot printer" });
+    const dialog = screen.getByRole("dialog", { name: "故障排查打印机" });
     expect(within(dialog).queryByText(/Checking the local print path/)).toBeNull();
-    expect(within(dialog).getAllByText(/Inconclusive/).length).toBe(9);
+    expect(within(dialog).getAllByText(/不确定/).length).toBe(9);
     expect(within(dialog).queryByRole("alert")).toBeNull();
-    expect(within(dialog).getByText(/Testing and repair are blocked/)).toBeTruthy();
+    expect(within(dialog).getByText(/测试与修复均被阻止/)).toBeTruthy();
     await act(async () => { finishLate({
       target, version: "3.4.4", queue_empty: true, test_print_enabled: false,
       repair_enabled: false, attempted_actions: [],
       checks: [{ check: "pending-jobs", status: "passed", detail: "Too-late empty-queue evidence" }],
     }); });
     expect(within(dialog).queryByText("Too-late empty-queue evidence")).toBeNull();
-    expect(within(dialog).getAllByText(/Inconclusive/).length).toBe(9);
+    expect(within(dialog).getAllByText(/不确定/).length).toBe(9);
     expect(within(dialog).queryByRole("alert")).toBeNull();
   } finally { vi.useRealTimers(); }
 });
@@ -496,16 +496,16 @@ it("keeps authoritative completed checks when pending-job inspection reaches its
     }), 14_000);
   }));
   render(<App />);
-  const open = await screen.findByRole("button", { name: "Troubleshoot Office" });
+  const open = await screen.findByRole("button", { name: "对 Office 进行故障排查" });
   vi.useFakeTimers();
   try {
     fireEvent.click(open);
     await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });
-    const dialog = screen.getByRole("dialog", { name: "Troubleshoot printer" });
+    const dialog = screen.getByRole("dialog", { name: "故障排查打印机" });
     expect(within(dialog).getByText("Completed native spooler evidence")).toBeTruthy();
     expect(within(dialog).getByText("Completed destination evidence")).toBeTruthy();
     expect(within(dialog).getByText("Pending work remains unknown")).toBeTruthy();
-    expect(within(dialog).getAllByText(/Inconclusive/).length).toBe(1);
+    expect(within(dialog).getAllByText(/不确定/).length).toBe(1);
   } finally { vi.useRealTimers(); }
 });
 
@@ -522,16 +522,16 @@ it("discards closed-session results and requires a choice before switching Clien
   vi.mocked(invoke).mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve; }))
     .mockResolvedValue(result(label, "Current queue evidence"));
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(screen.getByRole("button", { name: "Troubleshoot Labels" }));
-  const switchDialog = screen.getByRole("alertdialog", { name: "Switch troubleshooting printer" });
-  expect(screen.getByRole("dialog", { name: "Troubleshoot printer" }).textContent).toContain(office.server_address);
-  fireEvent.click(within(switchDialog).getByRole("button", { name: "Close and switch" }));
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(screen.getByRole("button", { name: "对 Labels 进行故障排查" }));
+  const switchDialog = screen.getByRole("alertdialog", { name: "切换故障排查打印机" });
+  expect(screen.getByRole("dialog", { name: "故障排查打印机" }).textContent).toContain(office.server_address);
+  fireEvent.click(within(switchDialog).getByRole("button", { name: "关闭并切换" }));
   expect(await screen.findByText("Current queue evidence")).toBeTruthy();
   await act(async () => { finishOld(result(office, "Stale evidence")); });
   expect(screen.queryByText("Stale evidence")).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Close troubleshooting" }));
-  expect(screen.queryByRole("dialog", { name: "Troubleshoot printer" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "关闭故障排查" }));
+  expect(screen.queryByRole("dialog", { name: "故障排查打印机" })).toBeNull();
 });
 
 it("reruns local checks and ignores results from a superseded run", async () => {
@@ -546,8 +546,8 @@ it("reruns local checks and ignores results from a superseded run", async () => 
   vi.mocked(invoke).mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve; }))
     .mockResolvedValue(snapshot("Fresh queue evidence"));
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(screen.getByRole("button", { name: "Check again" }));
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(screen.getByRole("button", { name: "再次检查" }));
   expect(await screen.findByText("Fresh queue evidence")).toBeTruthy();
   await act(async () => { finishOld(snapshot("Superseded evidence")); });
   expect(screen.queryByText("Superseded evidence")).toBeNull();
@@ -577,10 +577,10 @@ it("opens troubleshooting from a print failure card when target matches an insta
   });
   render(<App />);
 
-  const troubleshootBtn = await screen.findByRole("button", { name: "Troubleshoot printer" });
+  const troubleshootBtn = await screen.findByRole("button", { name: "故障排查打印机" });
   fireEvent.click(troubleshootBtn);
 
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
   expect(within(dialog).getByText(target.queue_name)).toBeTruthy();
   expect(within(dialog).getByText("Server offline")).toBeTruthy();
   expect(vi.mocked(invoke)).toHaveBeenCalledWith("inspect_local_client_queue", { target });
@@ -601,7 +601,7 @@ it("does not offer troubleshooting from a failure card when target cannot be ide
   render(<App />);
 
   expect(await screen.findByText(/could not submit to Windows queue/)).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Troubleshoot printer" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "故障排查打印机" })).toBeNull();
 });
 
 it("provides navigation to server identity review and network channel settings from classified checks", async () => {
@@ -620,18 +620,18 @@ it("provides navigation to server identity review and network channel settings f
   });
   render(<App />);
 
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
 
   expect(within(dialog).getByText(/Certificate changed/)).toBeTruthy();
   expect(within(dialog).getByText(/Channel rejected/)).toBeTruthy();
 
   // Test server review navigation
-  const reviewBtn = within(dialog).getByRole("button", { name: "Review server identity" });
+  const reviewBtn = within(dialog).getByRole("button", { name: "复核服务器身份" });
   fireEvent.click(reviewBtn);
 
   // Dialog closes and server review is opened
-  expect(screen.queryByRole("dialog", { name: "Troubleshoot printer" })).toBeNull();
+  expect(screen.queryByRole("dialog", { name: "故障排查打印机" })).toBeNull();
   expect(vi.mocked(serverConnections.inspectServerConnection)).toHaveBeenCalledWith(target.server_address);
 });
 
@@ -650,15 +650,15 @@ it("navigates to network channel settings from troubleshooting dialog", async ()
   });
   render(<App />);
 
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
 
-  const channelBtn = within(dialog).getByRole("button", { name: "Network Channel settings" });
+  const channelBtn = within(dialog).getByRole("button", { name: "网络通道设置" });
   fireEvent.click(channelBtn);
 
   // Dialog closes and navigated to settings workspace
-  expect(screen.queryByRole("dialog", { name: "Troubleshoot printer" })).toBeNull();
-  expect(screen.getByRole("heading", { name: "Settings" })).toBeTruthy();
+  expect(screen.queryByRole("dialog", { name: "故障排查打印机" })).toBeNull();
+  expect(screen.getByRole("heading", { name: "设置" })).toBeTruthy();
 });
 
 /** A computer that had the previous .NET app installed. */
@@ -708,9 +708,9 @@ describe("updater", () => {
       waiting_for_jobs: true,
     });
 
-    expect(await screen.findByText("ShaPrint 3.2.0 is ready")).toBeTruthy();
-    expect(screen.getByText(/restart is queued.*printing and spooler cleanup finish/i)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Restart queued" }));
+    expect(await screen.findByText("ShaPrint 3.2.0 已就绪")).toBeTruthy();
+    expect(screen.getByText(/你的重启已排队.*打印与假脱机清理完成后重启/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "重启已排队" }));
     await waitFor(() => expect(updatesApi.applyUpdateAndRestart).toHaveBeenCalledTimes(1));
   });
 
@@ -719,9 +719,9 @@ describe("updater", () => {
       message: "GitHub Releases could not be reached. Check your internet connection and try again.",
     });
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    fireEvent.click(screen.getByRole("button", { name: "Check for updates" }));
+    fireEvent.click(screen.getByRole("button", { name: "检查更新" }));
 
     const alerts = await screen.findAllByRole("alert");
     expect(alerts.some((el) => el.textContent?.includes("GitHub Releases could not be reached"))).toBe(true);
@@ -761,13 +761,13 @@ describe("updater", () => {
 
     // Top banner and sidebar indicator
     expect(await screen.findByText(/ShaPrint Nightly/i)).toBeTruthy();
-    expect(screen.getByText("Pre-release Test Build")).toBeTruthy();
+    expect(screen.getByText("预发布测试版")).toBeTruthy();
     expect(screen.getByText("Nightly")).toBeTruthy();
 
     // Settings page software updates panel
-    navigateTo("Settings");
-    expect(await screen.findByText("Nightly Channel")).toBeTruthy();
-    expect(screen.getByText("Nightly Channel Active")).toBeTruthy();
+    navigateTo("设置");
+    expect((await screen.findAllByText("预发布测试版")).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("已启用预发布测试版通道")).toBeTruthy();
   });
 
   it("omits nightly branding and displays stable indicator when on a stable build", async () => {
@@ -777,13 +777,13 @@ describe("updater", () => {
       waiting_for_jobs: false,
     });
     render(<App />);
-    navigateTo("Settings");
-    expect(await screen.findByText("Stable")).toBeTruthy();
+    navigateTo("设置");
+    expect(await screen.findByText("稳定版")).toBeTruthy();
 
-    expect(screen.queryByText("Pre-release Test Build")).toBeNull();
+    expect(screen.queryByText("预发布测试版")).toBeNull();
     expect(screen.queryByText("Nightly")).toBeNull();
 
-    expect(screen.queryByText("Nightly Channel Active")).toBeNull();
+    expect(screen.queryByText("已启用预发布测试版通道")).toBeNull();
   });
 });
 
@@ -791,21 +791,21 @@ describe("workspace navigation", () => {
   it("starts on My printers and keeps Share printers and Settings in their own sections", async () => {
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: "My printers", level: 1 })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "My printers" }).getAttribute("aria-current")).toBe("page");
-    expect(screen.queryByRole("region", { name: "Local printers" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "我的打印机", level: 1 })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "我的打印机" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.queryByRole("region", { name: "本地打印机" })).toBeNull();
 
-    navigateTo("Share printers");
-    expect(await screen.findByRole("heading", { name: "Share printers", level: 1 })).toBeTruthy();
-    expect(await screen.findByRole("region", { name: "Local printers" })).toBeTruthy();
+    navigateTo("共享打印机");
+    expect(await screen.findByRole("heading", { name: "共享打印机", level: 1 })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "本地打印机" })).toBeTruthy();
 
-    navigateTo("Settings");
-    expect(await screen.findByRole("heading", { name: "Settings", level: 1 })).toBeTruthy();
-    expect(await screen.findByRole("region", { name: "Print authorization" })).toBeTruthy();
-    expect(await screen.findByRole("region", { name: "Software updates" })).toBeTruthy();
-    expect(await screen.findByRole("region", { name: "Startup" })).toBeTruthy();
-    expect(await screen.findByRole("region", { name: "Print services" })).toBeTruthy();
-    expect(await screen.findByRole("region", { name: "Previous ShaPrint app" })).toBeTruthy();
+    navigateTo("设置");
+    expect(await screen.findByRole("heading", { name: "设置", level: 1 })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "打印授权" })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "软件更新" })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "启动" })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "打印服务" })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "以前的 ShaPrint 应用" })).toBeTruthy();
   });
 
   it("navigates from status pill or problem condition directly to service diagnostics dialog", async () => {
@@ -813,16 +813,16 @@ describe("workspace navigation", () => {
     render(<App />);
 
     const statusPill = await screen.findByRole("button", {
-      name: /Service needs attention\. Open service diagnostics/i,
+      name: /服务需要处理。打开服务诊断/,
     });
     expect(statusPill).toBeTruthy();
     fireEvent.click(statusPill);
 
     // Diagnostics dialog opens with detailed technical service controls
-    const dialog = await screen.findByRole("dialog", { name: "Print service status" });
+    const dialog = await screen.findByRole("dialog", { name: "打印服务状态" });
     expect(dialog).toBeTruthy();
-    expect(within(dialog).getByRole("heading", { name: "Client proxy" })).toBeTruthy();
-    expect(within(dialog).getByRole("heading", { name: "Server sharing" })).toBeTruthy();
+    expect(within(dialog).getByRole("heading", { name: "客户端代理" })).toBeTruthy();
+    expect(within(dialog).getByRole("heading", { name: "服务器共享" })).toBeTruthy();
   });
 });
 
@@ -832,7 +832,7 @@ describe("workspace service status", () => {
 
     expect(
       await screen.findByRole("button", {
-        name: "Client printing ready. Open service diagnostics",
+        name: "客户端打印就绪。打开服务诊断",
       }),
     ).toBeTruthy();
   });
@@ -843,7 +843,7 @@ describe("workspace service status", () => {
 
     expect(
       await screen.findByRole("button", {
-        name: "Print paths stopped. Open service diagnostics",
+        name: "打印通道已停止。打开服务诊断",
       }),
     ).toBeTruthy();
   });
@@ -878,12 +878,12 @@ describe("guided printer setup", () => {
 
     // Refresh button fetches current state again
     vi.mocked(serverConnections.listRecognisedClientQueues).mockResolvedValueOnce([]);
-    fireEvent.click(screen.getByRole("button", { name: "Refresh installed queues" }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新已安装队列" }));
 
     await waitFor(() => {
       expect(
         screen.getByText(
-          "No ShaPrint client queues installed in Windows.",
+          "Windows 中尚未安装任何 ShaPrint 客户端队列。",
         ),
       ).toBeTruthy();
     });
@@ -892,13 +892,13 @@ describe("guided printer setup", () => {
     vi.mocked(serverConnections.listRecognisedClientQueues).mockRejectedValueOnce(
       new Error("Spooler service unavailable"),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Refresh installed queues" }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新已安装队列" }));
 
     await waitFor(() => {
       expect(
         screen.getByText("Spooler service unavailable"),
       ).toBeTruthy();
-      expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "重试" })).toBeTruthy();
     });
   });
 
@@ -924,7 +924,7 @@ describe("guided printer setup", () => {
     expect(screen.queryByRole("button", { name: /uninstall/i })).toBeNull();
 
     // Manage in Windows action calls desktop shell
-    const manageButtons = screen.getAllByRole("button", { name: /Manage in Windows/i });
+    const manageButtons = screen.getAllByRole("button", { name: /在 Windows 中管理/ });
     expect(manageButtons.length).toBeGreaterThan(0);
     fireEvent.click(manageButtons[0]);
 
@@ -939,15 +939,15 @@ describe("guided printer setup", () => {
     fireEvent.click(manageButtons[0]);
 
     expect(
-      await screen.findByText(/Could not open Windows Settings automatically/i),
+      await screen.findByText(/无法自动打开 Windows 设置/),
     ).toBeTruthy();
     expect(
-      screen.getByText(/Open Windows Settings > Bluetooth & devices > Printers & scanners/i),
+      screen.getByText(/Windows 设置 > 蓝牙和其他设备 > 打印机和扫描仪/),
     ).toBeTruthy();
 
     // Queue name copy button is available
     const copyBtn = screen.getByRole("button", {
-      name: "Copy queue name Office Laser (ShaPrint 10.0.0.5-8631)",
+      name: "复制队列名称 Office Laser (ShaPrint 10.0.0.5-8631)",
     });
     expect(copyBtn).toBeTruthy();
   });
@@ -973,15 +973,15 @@ describe("guided printer setup", () => {
     render(<App />);
 
     const repair = await screen.findByRole("button", {
-      name: `Repair paper sizes for ${queue.queue_name}`,
+      name: `修复 ${queue.queue_name} 的纸张尺寸`,
     });
     fireEvent.click(repair);
 
-    const dialog = screen.getByRole("dialog", { name: "Repair paper sizes?" });
-    expect(within(dialog).getByText(/may reset this printer's local printing preferences/i)).toBeTruthy();
+    const dialog = screen.getByRole("dialog", { name: "修复纸张尺寸？" });
+    expect(within(dialog).getByText(/可能重置该打印机的本地打印偏好/)).toBeTruthy();
     expect(serverConnections.repairPrinterQueue).not.toHaveBeenCalled();
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Repair queue" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "修复队列" }));
 
     await waitFor(() => {
       expect(serverConnections.repairPrinterQueue).toHaveBeenCalledWith(
@@ -990,7 +990,7 @@ describe("guided printer setup", () => {
       );
     });
     expect(
-      await screen.findByText(`Repaired ${queue.queue_name}. Windows reloaded its paper sizes.`),
+      await screen.findByText(`已修复 ${queue.queue_name}。Windows 已重新加载其纸张尺寸。`),
     ).toBeTruthy();
     expect(serverConnections.listRecognisedClientQueues).toHaveBeenCalledTimes(2);
   });
@@ -1017,7 +1017,7 @@ describe("guided printer setup", () => {
       await screen.findByText("Office Laser (ShaPrint 10.0.0.5-8631)"),
     ).toBeTruthy();
     expect(
-      await screen.findByText("Server identity changed. Printing is blocked until reverified."),
+      await screen.findByText("服务器身份已变更。在重新验证前，打印已被阻止。"),
     ).toBeTruthy();
 
     // Does not display speculative Online or Offline badges
@@ -1026,32 +1026,32 @@ describe("guided printer setup", () => {
 
     // Reverify identity button opens the guided trust verification flow
     const reverifyBtn = screen.getByRole("button", {
-      name: "Reverify identity for 10.0.0.5:8631",
+      name: "重新验证 10.0.0.5:8631 的身份",
     });
     expect(reverifyBtn).toBeTruthy();
     expect(
       (
         screen.getByRole("button", {
-          name: "Repair paper sizes for Office Laser (ShaPrint 10.0.0.5-8631)",
+          name: "修复 Office Laser (ShaPrint 10.0.0.5-8631) 的纸张尺寸",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
     fireEvent.click(reverifyBtn);
 
     // Guided setup dialog opens directly to fingerprint verification step
-    expect(await screen.findByRole("dialog", { name: "Check the server identity" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "检查服务器身份" })).toBeTruthy();
   });
 
   it("offers a single guided Add printer entry in My printers workspace without duplicate inline controls", async () => {
     render(<App />);
 
     // The single guided entry action is available right on the default My printers screen
-    expect(screen.getByRole("button", { name: "Add printer" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "添加打印机" })).toBeTruthy();
 
     // The duplicate inline inspection and install path is no longer present
     expect(screen.queryByLabelText("Server address")).toBeNull();
-    expect(screen.queryByRole("heading", { name: "Add by address" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Inspect certificate" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "按地址添加" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "检查证书" })).toBeNull();
   });
 
   it("keeps trusted servers visible with live status, refresh, printers, and forget actions", async () => {
@@ -1114,22 +1114,22 @@ describe("guided printer setup", () => {
     expect(screen.getByText(offlineAddress)).toBeTruthy();
     expect(screen.getByText(changedAddress)).toBeTruthy();
     expect(screen.getByText(forgottenAddress)).toBeTruthy();
-    expect(screen.getByText("Online")).toBeTruthy();
-    expect(screen.getAllByText("Offline").length).toBe(2);
-    expect(screen.getByText("Identity changed")).toBeTruthy();
-    expect(screen.getByText(/Shared printers: Zebra/)).toBeTruthy();
+    expect(screen.getByText("在线")).toBeTruthy();
+    expect(screen.getAllByText("离线").length).toBe(2);
+    expect(screen.getByText("身份已变更")).toBeTruthy();
+    expect(screen.getByText(/共享打印机：Zebra/)).toBeTruthy();
     expect(screen.getByText(changedFingerprint)).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: `Review shared printers for ${onlineAddress}` }),
+      screen.getByRole("button", { name: `复核共享打印机：${onlineAddress}` }),
     ).toBeTruthy();
     await waitFor(() => expect(serverConnections.probeTrustedServer).toHaveBeenCalledTimes(4));
 
-    fireEvent.click(screen.getByRole("button", { name: `Refresh status for ${offlineAddress}` }));
+    fireEvent.click(screen.getByRole("button", { name: `刷新 ${offlineAddress} 的状态` }));
     await waitFor(() => expect(serverConnections.probeTrustedServer).toHaveBeenCalledTimes(5));
     expect(serverConnections.probeTrustedServer).toHaveBeenLastCalledWith(offlineAddress);
-    expect(await screen.findByText(/Shared printers: Receipt printer/)).toBeTruthy();
+    expect(await screen.findByText(/共享打印机：Receipt printer/)).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: `Forget ${forgottenAddress}` }));
+    fireEvent.click(screen.getByRole("button", { name: `忘记 ${forgottenAddress}` }));
     await waitFor(() => {
       expect(serverConnections.forgetTrustedServer).toHaveBeenCalledWith(forgottenAddress);
       expect(screen.queryByText(forgottenAddress)).toBeNull();
@@ -1153,9 +1153,9 @@ describe("guided printer setup", () => {
     render(<App />);
 
     // Open guided setup from My printers
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
-    expect(within(dialog).getByText(/Advertised \(unverified\): Zebra, Receipt/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
+    expect(within(dialog).getByText(/广播（未验证）：Zebra, Receipt/)).toBeTruthy();
   });
 
   it("completes guided add printer flow from nearby server with observable IPC ordering", async () => {
@@ -1195,21 +1195,21 @@ describe("guided printer setup", () => {
     render(<App />);
 
     // Click Add printer from My printers workspace
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
     // Select nearby server from wizard
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
     const serverOption = within(dialog).getByText("DESKTOP-ABC").closest(".wizard-server-option") as HTMLElement;
-    fireEvent.click(within(serverOption).getByRole("button", { name: "Review identity" }));
+    fireEvent.click(within(serverOption).getByRole("button", { name: "复核身份" }));
 
     // Opens dialog, inspects certificate, reaches verification step
-    expect(await screen.findByRole("dialog", { name: "Check the server identity" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "检查服务器身份" })).toBeTruthy();
     expect(serverConnections.inspectServerConnection).toHaveBeenCalledWith("192.0.2.10:8631");
     // Authoritative shared-printer queries are blocked until server identity is approved
     expect(serverConnections.listServerConnectionPrinters).not.toHaveBeenCalled();
 
     // Approve fingerprint
-    fireEvent.click(screen.getByRole("button", { name: "Approve fingerprint" }));
+    fireEvent.click(screen.getByRole("button", { name: "批准指纹" }));
 
     // Now queries printers and advances to printers step
     await waitFor(() => {
@@ -1223,7 +1223,7 @@ describe("guided printer setup", () => {
     expect(await screen.findByText("Office Laser")).toBeTruthy();
 
     // Install printer
-    fireEvent.click(screen.getByRole("button", { name: "Install" }));
+    fireEvent.click(screen.getByRole("button", { name: "安装" }));
 
     await waitFor(() => {
       expect(serverConnections.installPrinterQueue).toHaveBeenCalledWith(
@@ -1233,9 +1233,9 @@ describe("guided printer setup", () => {
     });
 
     // Success screen names the Windows queue and explains printing via ordinary Windows print dialog
-    expect(await screen.findByRole("heading", { name: "Printer installed" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "打印机已安装" })).toBeTruthy();
     expect(screen.getByText("Office Laser (ShaPrint 192.0.2.10-8631)")).toBeTruthy();
-    expect(screen.getByText(/Choose this printer from any Windows print dialog/)).toBeTruthy();
+    expect(screen.getByText(/你可以在任何 Windows 打印对话框中选择此打印机/)).toBeTruthy();
 
     // Verifies listRecognisedClientQueues was automatically refreshed upon installation
     expect(serverConnections.listRecognisedClientQueues).toHaveBeenCalled();
@@ -1248,7 +1248,7 @@ describe("guided printer setup", () => {
         printer_name: "Office Laser",
       },
     ]);
-    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
     expect(await screen.findByText("Office Laser (ShaPrint 192.0.2.10-8631)")).toBeTruthy();
   });
@@ -1267,16 +1267,16 @@ describe("guided printer setup", () => {
     });
 
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
-    fireEvent.change(within(dialog).getByLabelText("Or enter a server address"), {
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
+    fireEvent.change(within(dialog).getByLabelText("或输入服务器地址"), {
       target: { value: "192.0.2.10:8631" },
     });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Review identity" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "复核身份" }));
 
     // Automatically jumps to printers step and queries printers without asking for approval
-    expect(await screen.findByRole("heading", { name: "Choose a printer" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "选择打印机" })).toBeTruthy();
     expect(serverConnections.approveServerConnection).not.toHaveBeenCalled();
     expect(serverConnections.listServerConnectionPrinters).toHaveBeenCalledWith(review.address);
     expect(await screen.findByText("Office Laser")).toBeTruthy();
@@ -1301,17 +1301,17 @@ describe("guided printer setup", () => {
     });
 
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
-    fireEvent.change(within(dialog).getByLabelText("Or enter a server address"), {
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
+    fireEvent.change(within(dialog).getByLabelText("或输入服务器地址"), {
       target: { value: "192.0.2.10:8631" },
     });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Review identity" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "复核身份" }));
 
     // Shows changed warning
-    expect(await screen.findByText("Server identity has changed.")).toBeTruthy();
-    const reapproveBtn = screen.getByRole("button", { name: "Reapprove fingerprint" });
+    expect(await screen.findByText("服务器身份已变更。")).toBeTruthy();
+    const reapproveBtn = screen.getByRole("button", { name: "重新批准指纹" });
     expect(reapproveBtn).toBeTruthy();
 
     // Authoritative printer query is blocked before reapproval
@@ -1353,34 +1353,34 @@ describe("guided printer setup", () => {
     });
 
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
 
     // Step list includes Network Channel when not configured
-    const stepList = within(dialog).getByRole("list", { name: "Printer setup steps" });
-    expect(within(stepList).getByText("Network Channel")).toBeTruthy();
+    const stepList = within(dialog).getByRole("list", { name: "打印机设置步骤" });
+    expect(within(stepList).getByText("网络通道")).toBeTruthy();
 
     // Proceed to printers
-    fireEvent.change(within(dialog).getByLabelText("Or enter a server address"), {
+    fireEvent.change(within(dialog).getByLabelText("或输入服务器地址"), {
       target: { value: "192.0.2.10:8631" },
     });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Review identity" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "复核身份" }));
 
-    expect(await screen.findByRole("heading", { name: "Choose a printer" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "选择打印机" })).toBeTruthy();
     expect(await screen.findByText("Office Laser")).toBeTruthy();
 
     // Click install -> prompts for Network Channel
-    fireEvent.click(screen.getByRole("button", { name: "Install" }));
+    fireEvent.click(screen.getByRole("button", { name: "安装" }));
 
-    expect(await screen.findByRole("heading", { name: "Set the Network Channel" })).toBeTruthy();
-    expect(within(stepList).getByText("Network Channel").closest("li")?.getAttribute("aria-current")).toBe("step");
+    expect(await screen.findByRole("heading", { name: "设置网络通道" })).toBeTruthy();
+    expect(within(stepList).getByText("网络通道").closest("li")?.getAttribute("aria-current")).toBe("step");
 
     // Enter channel and submit
-    fireEvent.change(screen.getByLabelText("Network Channel"), {
+    fireEvent.change(screen.getByLabelText("网络通道"), {
       target: { value: "secret-channel" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save Network Channel and install" }));
+    fireEvent.click(screen.getByRole("button", { name: "保存网络通道并安装" }));
 
     await waitFor(() => {
       expect(networkChannel.configureNetworkChannel).toHaveBeenCalledWith("secret-channel");
@@ -1390,7 +1390,7 @@ describe("guided printer setup", () => {
       );
     });
 
-    expect(await screen.findByRole("heading", { name: "Printer installed" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "打印机已安装" })).toBeTruthy();
   });
 
   it("resets selection, progress, and error state when reopening the journey after success, cancellation, or failure", async () => {
@@ -1414,29 +1414,29 @@ describe("guided printer setup", () => {
     });
 
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    let dialog = await screen.findByRole("dialog", { name: "Find a server" });
-    fireEvent.change(within(dialog).getByLabelText("Or enter a server address"), {
+    let dialog = await screen.findByRole("dialog", { name: "查找服务器" });
+    fireEvent.change(within(dialog).getByLabelText("或输入服务器地址"), {
       target: { value: "192.0.2.10:8631" },
     });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Review identity" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "复核身份" }));
 
-    expect(await screen.findByRole("heading", { name: "Choose a printer" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "选择打印机" })).toBeTruthy();
     expect(await screen.findByText("Office Laser")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Install" }));
-    expect(await screen.findByRole("heading", { name: "Printer installed" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "安装" }));
+    expect(await screen.findByRole("heading", { name: "打印机已安装" })).toBeTruthy();
 
     // Click Done to close
-    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
     // Reopen Add printer
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    dialog = await screen.findByRole("dialog", { name: "查找服务器" });
     // Starts fresh at step 1 with empty input and no stale installed queue
-    expect(within(dialog).getByRole("heading", { name: "Find a server" })).toBeTruthy();
-    expect((within(dialog).getByLabelText("Or enter a server address") as HTMLInputElement).value).toBe("");
+    expect(within(dialog).getByRole("heading", { name: "查找服务器" })).toBeTruthy();
+    expect((within(dialog).getByLabelText("或输入服务器地址") as HTMLInputElement).value).toBe("");
     expect(screen.queryByText("Office Laser (ShaPrint 192.0.2.10-8631)")).toBeNull();
   });
 
@@ -1445,9 +1445,9 @@ describe("guided printer setup", () => {
     window.innerWidth = 480;
 
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
     expect(dialog).toBeTruthy();
 
     // Dialog has proper accessible attributes
@@ -1468,14 +1468,14 @@ describe("guided printer setup", () => {
 describe("runtime status panel", () => {
   it("shows the live state of the proxy and sharing services", async () => {
     const { container } = render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
     await waitFor(() => expect(container.querySelector('[data-service="client-proxy"]')).not.toBeNull());
 
     expect(serviceCard(container, "client-proxy").dataset.state).toBe("running");
     expect(serviceCard(container, "server-sharing").dataset.state).toBe("stopped");
-    expect(screen.getByText("Client proxy")).toBeTruthy();
-    expect(screen.getByText("Server sharing")).toBeTruthy();
+    expect(screen.getByText("客户端代理")).toBeTruthy();
+    expect(screen.getByText("服务器共享")).toBeTruthy();
   });
 
   it("follows status events published by the shell", async () => {
@@ -1485,7 +1485,7 @@ describe("runtime status panel", () => {
       return () => {};
     });
     const { container } = render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
     await waitFor(() => expect(publish).toBeDefined());
     publish?.(runtimeWith("failed", "running"));
@@ -1495,21 +1495,21 @@ describe("runtime status panel", () => {
 
     // A failed service can be retried; a running one can only be stopped.
     const failed = serviceCard(container, "client-proxy");
-    expect(within(failed).getByRole("button", { name: "Start" }).hasAttribute("disabled")).toBe(false);
-    expect(within(failed).getByRole("button", { name: "Stop" }).hasAttribute("disabled")).toBe(true);
+    expect(within(failed).getByRole("button", { name: "启动" }).hasAttribute("disabled")).toBe(false);
+    expect(within(failed).getByRole("button", { name: "停止" }).hasAttribute("disabled")).toBe(true);
     const running = serviceCard(container, "server-sharing");
-    expect(within(running).getByRole("button", { name: "Start" }).hasAttribute("disabled")).toBe(true);
-    expect(within(running).getByRole("button", { name: "Stop" }).hasAttribute("disabled")).toBe(false);
+    expect(within(running).getByRole("button", { name: "启动" }).hasAttribute("disabled")).toBe(true);
+    expect(within(running).getByRole("button", { name: "停止" }).hasAttribute("disabled")).toBe(false);
   });
 
   it("renders the status returned by a service action", async () => {
     vi.mocked(ipc.startService).mockResolvedValue(runtimeWith("running", "running"));
     const { container } = render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
     await waitFor(() => expect(container.querySelector('[data-service="server-sharing"]')).not.toBeNull());
     const sharing = serviceCard(container, "server-sharing");
-    fireEvent.click(within(sharing).getByRole("button", { name: "Start" }));
+    fireEvent.click(within(sharing).getByRole("button", { name: "启动" }));
 
     await waitFor(() => expect(sharing.dataset.state).toBe("running"));
     expect(ipc.startService).toHaveBeenCalledWith("server-sharing");
@@ -1520,16 +1520,16 @@ describe("runtime status panel", () => {
       .mockRejectedValueOnce({ code: "unsupported", message: "Clients cannot connect through the Windows firewall: administrator permission was not granted. Approve the Windows prompt, then try again." })
       .mockResolvedValueOnce(runtimeWith("running", "running"));
     const { container } = render(<App />);
-    navigateTo("Settings");
-    const server = await screen.findByRole("region", { name: "Print services" });
+    navigateTo("设置");
+    const server = await screen.findByRole("region", { name: "打印服务" });
     const sharing = serviceCard(container, "server-sharing");
 
-    fireEvent.click(within(sharing).getByRole("button", { name: "Start" }));
+    fireEvent.click(within(sharing).getByRole("button", { name: "启动" }));
     const alert = await within(server).findByRole("alert");
     expect(alert.textContent).toContain("Clients cannot connect");
     expect(sharing.dataset.state).toBe("stopped");
 
-    fireEvent.click(within(sharing).getByRole("button", { name: "Start" }));
+    fireEvent.click(within(sharing).getByRole("button", { name: "启动" }));
     await waitFor(() => expect(sharing.dataset.state).toBe("running"));
     expect(ipc.startService).toHaveBeenCalledTimes(2);
     expect(within(server).queryByRole("alert")).toBeNull();
@@ -1542,13 +1542,13 @@ describe("runtime status panel", () => {
       message: "select at least one printer to share before starting",
     });
     const { container } = render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
     await waitFor(() => expect(container.querySelector('[data-service="client-proxy"]')).not.toBeNull());
     const proxy = serviceCard(container, "client-proxy");
-    fireEvent.click(within(proxy).getByRole("button", { name: "Start" }));
+    fireEvent.click(within(proxy).getByRole("button", { name: "启动" }));
 
-    const panel = screen.getByRole("region", { name: "Print services" });
+    const panel = screen.getByRole("region", { name: "打印服务" });
     const alert = await within(panel).findByRole("alert");
     expect(alert.textContent).toContain("invalid-state");
     expect(alert.textContent).toContain("select at least one printer to share before starting");
@@ -1561,9 +1561,9 @@ describe("runtime status panel", () => {
     vi.mocked(ipc.listLocalPrinters).mockRejectedValue(new Error("ipc unavailable"));
     vi.mocked(ipc.getServerIdentity).mockRejectedValue(new Error("ipc unavailable"));
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const hint = await screen.findByText(/runtime is not reachable/i);
+    const hint = await screen.findByText(/此窗口无法连接到 ShaPrint 运行时/);
     expect(hint).toBeTruthy();
   });
 
@@ -1574,7 +1574,7 @@ describe("runtime status panel", () => {
       return () => {};
     });
     const { container } = render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
     await waitFor(() => expect(publish).toBeDefined());
 
@@ -1582,18 +1582,18 @@ describe("runtime status panel", () => {
     // start. Server sharing is off by default, so a stopped sharing service is not reported.
     publish?.(runtimeWith("stopped", "stopped"));
     await waitFor(() =>
-      expect(serviceCard(container, "client-proxy").textContent).toContain("Printing affected"),
+      expect(serviceCard(container, "client-proxy").textContent).toContain("打印受影响"),
     );
-    expect(serviceCard(container, "client-proxy").textContent).toContain("Start the client proxy");
-    expect(serviceCard(container, "server-sharing").textContent).not.toContain("Printing affected");
+    expect(serviceCard(container, "client-proxy").textContent).toContain("启动客户端代理");
+    expect(serviceCard(container, "server-sharing").textContent).not.toContain("打印受影响");
 
     // A failure is worth reporting wherever it happens.
     publish?.(runtimeWith("running", "failed"));
     await waitFor(() =>
-      expect(serviceCard(container, "server-sharing").textContent).toContain("Printing affected"),
+      expect(serviceCard(container, "server-sharing").textContent).toContain("打印受影响"),
     );
-    expect(serviceCard(container, "server-sharing").textContent).toContain("use Start to try again");
-    expect(serviceCard(container, "client-proxy").textContent).not.toContain("Printing affected");
+    expect(serviceCard(container, "server-sharing").textContent).toContain("请使用“启动”重试");
+    expect(serviceCard(container, "client-proxy").textContent).not.toContain("打印受影响");
   });
 });
 
@@ -1602,11 +1602,11 @@ describe("print problems panel", () => {
     vi.mocked(printFailures.getPrintFailures).mockResolvedValue(FAILURE);
     render(<App />);
 
-    const panel = await screen.findByRole("region", { name: "Print problems" });
+    const panel = await screen.findByRole("region", { name: "打印问题" });
     expect(await within(panel).findByText(FAILURE.message)).toBeTruthy();
     expect(within(panel).getByText("queue-unavailable")).toBeTruthy();
     expect(within(panel).getByText(FAILURE.recovery)).toBeTruthy();
-    expect(within(panel).getByText("Submitting the job to the printer queue")).toBeTruthy();
+    expect(within(panel).getByText("将任务提交到打印机队列")).toBeTruthy();
   });
 
   it("follows the failures the shell publishes", async () => {
@@ -1617,12 +1617,12 @@ describe("print problems panel", () => {
     });
     render(<App />);
 
-    const panel = await screen.findByRole("region", { name: "Print problems" });
+    const panel = await screen.findByRole("region", { name: "打印问题" });
     await waitFor(() => expect(publish).toBeDefined());
     publish?.({ ...FAILURE, path: "client-forwarding", code: "server-unavailable" });
 
     expect(await within(panel).findByText("server-unavailable")).toBeTruthy();
-    expect(within(panel).getByText("Sending the job to the server")).toBeTruthy();
+    expect(within(panel).getByText("将任务发送到服务器")).toBeTruthy();
   });
 
   it("does not claim the print path is clear when failures cannot be read", async () => {
@@ -1632,9 +1632,9 @@ describe("print problems panel", () => {
     });
     render(<App />);
 
-    const panel = await screen.findByRole("region", { name: "Print problems" });
+    const panel = await screen.findByRole("region", { name: "打印问题" });
     expect(await within(panel).findByRole("alert")).toBeTruthy();
-    expect(within(panel).queryByText(/No recent print failures/i)).toBeNull();
+    expect(within(panel).queryByText(/近期没有打印失败/i)).toBeNull();
   });
 
   it("dismisses a failure and returns to the calm state", async () => {
@@ -1642,20 +1642,20 @@ describe("print problems panel", () => {
     vi.mocked(printFailures.dismissPrintFailure).mockResolvedValue(null);
     render(<App />);
 
-    const panel = await screen.findByRole("region", { name: "Print problems" });
-    fireEvent.click(within(panel).getByRole("button", { name: "Dismiss" }));
+    const panel = await screen.findByRole("region", { name: "打印问题" });
+    fireEvent.click(within(panel).getByRole("button", { name: "忽略" }));
 
     await waitFor(() => expect(printFailures.dismissPrintFailure).toHaveBeenCalledTimes(1));
-    expect(await within(panel).findByText(/No recent print failures/i)).toBeTruthy();
+    expect(await within(panel).findByText(/近期没有打印失败/i)).toBeTruthy();
     expect(within(panel).queryByText(FAILURE.message)).toBeNull();
   });
 
   it("says nothing is wrong before a job fails", async () => {
     render(<App />);
 
-    const panel = await screen.findByRole("region", { name: "Print problems" });
-    expect(within(panel).getByText(/No recent print failures/i)).toBeTruthy();
-    expect(within(panel).queryByRole("button", { name: "Dismiss" })).toBeNull();
+    const panel = await screen.findByRole("region", { name: "打印问题" });
+    expect(within(panel).getByText(/近期没有打印失败/i)).toBeTruthy();
+    expect(within(panel).queryByRole("button", { name: "忽略" })).toBeNull();
   });
 });
 
@@ -1669,8 +1669,8 @@ describe("shared printers panel", () => {
     expect(printerRow(container, "HP LaserJet").dataset.shared).toBe("true");
     expect(printerRow(container, "Zebra").dataset.shared).toBe("false");
     expect(printerRow(container, "Canon").dataset.shared).toBe("true");
-    expect(within(printerRow(container, "Zebra")).getByText("Not shared")).toBeTruthy();
-    expect(screen.getByText(/2 of 3 shared/)).toBeTruthy();
+    expect(within(printerRow(container, "Zebra")).getByText("未共享")).toBeTruthy();
+    expect(screen.getByText(/2 \/ 3 已共享/)).toBeTruthy();
   });
 
   it("explains when a printer search has no matches", async () => {
@@ -1681,14 +1681,14 @@ describe("shared printers panel", () => {
       })),
     });
     render(<App />);
-    navigateTo("Share printers");
+    navigateTo("共享打印机");
 
-    const panel = await screen.findByRole("region", { name: "Local printers" });
-    fireEvent.change(within(panel).getByRole("textbox", { name: "Search printers" }), {
+    const panel = await screen.findByRole("region", { name: "本地打印机" });
+    fireEvent.change(within(panel).getByRole("textbox", { name: "搜索打印机" }), {
       target: { value: "plotter" },
     });
 
-    expect(await within(panel).findByText("No printers match “plotter”.")).toBeTruthy();
+    expect(await within(panel).findByText("没有与“plotter”匹配的打印机。")).toBeTruthy();
   });
 
   it("shares the queues the user selects", async () => {
@@ -1716,28 +1716,28 @@ describe("shared printers panel", () => {
     const { container } = render(<App />);
 
     await sharingPanel(container);
-    const panel = screen.getByRole("region", { name: "Local printers" });
+    const panel = screen.getByRole("region", { name: "本地打印机" });
 
     const heading = await within(panel).findByRole("heading", {
-      name: "Custom paper sizes",
+      name: "自定义纸张尺寸",
     });
     expect(heading).toBeTruthy();
     expect(within(panel).getByText("Receipt 80x120")).toBeTruthy();
     expect(within(panel).getByText(/80 × 120 mm/)).toBeTruthy();
 
     fireEvent.change(
-      within(panel).getByLabelText("Custom paper size label"),
+      within(panel).getByLabelText("自定义纸张尺寸名称"),
       { target: { value: "Label 100x150" } },
     );
     fireEvent.change(
-      within(panel).getByLabelText("Custom paper size width in millimetres"),
+      within(panel).getByLabelText("自定义纸张尺寸宽度（毫米）"),
       { target: { value: "100" } },
     );
     fireEvent.change(
-      within(panel).getByLabelText("Custom paper size height in millimetres"),
+      within(panel).getByLabelText("自定义纸张尺寸高度（毫米）"),
       { target: { value: "150" } },
     );
-    fireEvent.click(within(panel).getByRole("button", { name: "Add" }));
+    fireEvent.click(within(panel).getByRole("button", { name: "添加" }));
 
     await waitFor(() => {
       expect(ipc.addCustomMedia).toHaveBeenCalledWith({
@@ -1751,12 +1751,12 @@ describe("shared printers panel", () => {
 
   it("shows the certificate fingerprint a client has to approve", async () => {
     render(<App />);
-    navigateTo("Share printers");
+    navigateTo("共享打印机");
 
     const fingerprint = await screen.findByTestId("server-fingerprint");
     expect(fingerprint.textContent).toBe(IDENTITY.fingerprint);
-    expect(screen.getByText("Port 48631")).toBeTruthy();
-    expect(screen.getByText(/Clients verify this fingerprint/)).toBeTruthy();
+    expect(screen.getByText("端口 48631")).toBeTruthy();
+    expect(screen.getByText(/客户端在查看共享打印机前会核验此指纹/)).toBeTruthy();
   });
 
   it("copies the server fingerprint only after the user asks", async () => {
@@ -1769,11 +1769,11 @@ describe("shared printers panel", () => {
 
     try {
       render(<App />);
-      navigateTo("Share printers");
+      navigateTo("共享打印机");
       await screen.findByTestId("server-fingerprint");
-      fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+      fireEvent.click(screen.getByRole("button", { name: "复制" }));
 
-      expect(await screen.findByText("Fingerprint copied.")).toBeTruthy();
+      expect(await screen.findByText("指纹已复制。")).toBeTruthy();
       expect(writeText).toHaveBeenCalledWith(IDENTITY.fingerprint);
     } finally {
       if (originalClipboard) {
@@ -1790,9 +1790,9 @@ describe("shared printers panel", () => {
     await sharingPanel(container);
 
     expect(screen.queryByRole("button", { name: "Allow client connections" })).toBeNull();
-    navigateTo("Settings");
+    navigateTo("设置");
     const server = serviceCard(container, "server-sharing");
-    fireEvent.click(within(server).getByRole("button", { name: "Start" }));
+    fireEvent.click(within(server).getByRole("button", { name: "启动" }));
 
     await waitFor(() => expect(server.dataset.state).toBe("running"));
     expect(ipc.startService).toHaveBeenCalledWith("server-sharing");
@@ -1805,10 +1805,10 @@ describe("shared printers panel", () => {
     vi.mocked(ipc.stopService).mockResolvedValue(runtimeWith("running", "stopped"));
 
     render(<App />);
-    navigateTo("Share printers");
+    navigateTo("共享打印机");
 
     // Local queues already has a shared printer (HP LaserJet)
-    const startBtn = await screen.findByRole("button", { name: "Start sharing" });
+    const startBtn = await screen.findByRole("button", { name: "开始共享" });
     expect(startBtn).toBeTruthy();
     fireEvent.click(startBtn);
 
@@ -1817,7 +1817,7 @@ describe("shared printers panel", () => {
     });
 
     // When running, shows Stop sharing
-    const stopBtn = await screen.findByRole("button", { name: "Stop sharing" });
+    const stopBtn = await screen.findByRole("button", { name: "停止共享" });
     expect(stopBtn).toBeTruthy();
     fireEvent.click(stopBtn);
 
@@ -1833,29 +1833,29 @@ describe("shared printers panel", () => {
     vi.mocked(ipc.startService).mockResolvedValue(runtimeWith("running", "running"));
 
     render(<App />);
-    navigateTo("Share printers");
+    navigateTo("共享打印机");
 
-    const startBtn = await screen.findByRole("button", { name: "Start sharing" });
+    const startBtn = await screen.findByRole("button", { name: "开始共享" });
     fireEvent.click(startBtn);
 
     // Shows contextual prompt
     expect(
-      await screen.findByRole("region", { name: "Set Network Channel before sharing" }),
+      await screen.findByRole("region", { name: "共享前设置网络通道" }),
     ).toBeTruthy();
 
     // Cancel prompt leaves sharing off and preserves selection
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
     expect(
-      screen.queryByRole("region", { name: "Set Network Channel before sharing" }),
+      screen.queryByRole("region", { name: "共享前设置网络通道" }),
     ).toBeNull();
     expect(ipc.startService).not.toHaveBeenCalled();
 
     // Entering secret saves and starts sharing
-    fireEvent.click(screen.getByRole("button", { name: "Start sharing" }));
-    fireEvent.change(screen.getByLabelText("Network Channel secret"), {
+    fireEvent.click(screen.getByRole("button", { name: "开始共享" }));
+    fireEvent.change(screen.getByLabelText("网络通道密钥"), {
       target: { value: "secret123" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save & Start sharing" }));
+    fireEvent.click(screen.getByRole("button", { name: "保存并开始共享" }));
 
     await waitFor(() => {
       expect(networkChannel.configureNetworkChannel).toHaveBeenCalledWith("secret123");
@@ -1873,7 +1873,7 @@ describe("shared printers panel", () => {
     await sharingPanel(container);
     fireEvent.click(within(printerRow(container, "Zebra")).getByRole("checkbox"));
 
-    const panel = screen.getByRole("region", { name: "Local printers" });
+    const panel = screen.getByRole("region", { name: "本地打印机" });
     const alert = await within(panel).findByRole("alert");
     expect(alert.textContent).toContain("invalid-input");
     expect(alert.textContent).toContain("'Ghost' is not a local printer queue");
@@ -1889,9 +1889,9 @@ describe("shared printers panel", () => {
       message: "listing local printer queues is only supported on Windows",
     });
     render(<App />);
-    navigateTo("Share printers");
+    navigateTo("共享打印机");
 
-    const panel = await screen.findByRole("region", { name: "Local printers" });
+    const panel = await screen.findByRole("region", { name: "本地打印机" });
     const alert = await within(panel).findByRole("alert");
     expect(alert.textContent).toContain("unsupported");
     expect(alert.textContent).toContain("only supported on Windows");
@@ -1900,30 +1900,30 @@ describe("shared printers panel", () => {
 describe("Network Channel panel", () => {
   it("gives the visibility button a field-specific name and keyboard focus", async () => {
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Print authorization" });
-    const input = within(panel).getByLabelText("Network Channel") as HTMLInputElement;
-    const showButton = within(panel).getByRole("button", { name: "Show Network Channel" });
+    const panel = await screen.findByRole("region", { name: "打印授权" });
+    const input = within(panel).getByLabelText("网络通道") as HTMLInputElement;
+    const showButton = within(panel).getByRole("button", { name: "显示 网络通道" });
 
     expect(input.type).toBe("password");
     expect(showButton.tabIndex).toBe(0);
     fireEvent.click(showButton);
     expect(input.type).toBe("text");
-    expect(within(panel).getByRole("button", { name: "Hide Network Channel" })).toBeTruthy();
+    expect(within(panel).getByRole("button", { name: "隐藏 网络通道" })).toBeTruthy();
   });
 
   it("saves a server channel without displaying the secret again", async () => {
     vi.mocked(networkChannel.configureNetworkChannel).mockResolvedValue(true);
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const input = screen.getByLabelText("Network Channel") as HTMLInputElement;
+    const input = screen.getByLabelText("网络通道") as HTMLInputElement;
     const value = `network-${Date.now()}-${Math.random()}`;
     fireEvent.change(input, { target: { value } });
-    fireEvent.click(screen.getByRole("button", { name: "Save Network Channel" }));
+    fireEvent.click(screen.getByRole("button", { name: "保存网络通道" }));
 
-    expect(await screen.findByText(/Network Channel updated\./)).toBeTruthy();
+    expect(await screen.findByText(/网络通道已更新/)).toBeTruthy();
     expect(networkChannel.configureNetworkChannel).toHaveBeenCalledWith(value);
     expect(input.value).toBe("");
     expect(screen.queryByText(value)).toBeNull();
@@ -1942,21 +1942,21 @@ describe("nearby servers panel", () => {
     });
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
     expect(await within(dialog).findByText("DESKTOP-ABC")).toBeTruthy();
     expect(within(dialog).getByText("192.0.2.10:8631")).toBeTruthy();
-    expect(within(dialog).getByText(/Advertised \(unverified\): Zebra/)).toBeTruthy();
+    expect(within(dialog).getByText(/广播（未验证）：Zebra/)).toBeTruthy();
 
     const serverOption = within(dialog).getByText("DESKTOP-ABC").closest(".wizard-server-option") as HTMLElement;
-    fireEvent.click(within(serverOption).getByRole("button", { name: "Review identity" }));
+    fireEvent.click(within(serverOption).getByRole("button", { name: "复核身份" }));
 
     // Reviewing a discovered server opens the guided setup dialog and inspects its certificate
     await waitFor(() =>
       expect(serverConnections.inspectServerConnection).toHaveBeenCalledWith("192.0.2.10:8631"),
     );
-    expect(await screen.findByRole("dialog", { name: "Check the server identity" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "检查服务器身份" })).toBeTruthy();
     expect(serverConnections.listServerConnectionPrinters).not.toHaveBeenCalled();
   });
 
@@ -1968,9 +1968,9 @@ describe("nearby servers panel", () => {
     });
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
     await waitFor(() => expect(publish).toBeDefined());
     publish?.(nearbyWith("DESKTOP-ZULU"));
 
@@ -1980,14 +1980,14 @@ describe("nearby servers panel", () => {
   it("keeps working by address when discovery finds nothing", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
     expect(
-      await within(dialog).findByText(/No servers found on this network/i),
+      await within(dialog).findByText(/本网络上未发现服务器/),
     ).toBeTruthy();
     // Clicking Add printer allows manual address entry
-    expect(within(dialog).getByLabelText("Or enter a server address")).toBeTruthy();
+    expect(within(dialog).getByLabelText("或输入服务器地址")).toBeTruthy();
   });
 
   it("exposes the advertised version and displays a non-blocking version drift badge when server is newer", async () => {
@@ -2023,9 +2023,9 @@ describe("nearby servers panel", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Add printer" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加打印机" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Find a server" });
+    const dialog = await screen.findByRole("dialog", { name: "查找服务器" });
 
     // Matching version server displays version badge without drift badge
     expect(await within(dialog).findByText("DESKTOP-MATCH")).toBeTruthy();
@@ -2042,7 +2042,7 @@ describe("nearby servers panel", () => {
 
     // Version drift does not block review identity action
     const newerServerItem = within(dialog).getByText("DESKTOP-NEWER").closest(".wizard-server-option") as HTMLElement;
-    const reviewButton = within(newerServerItem).getByRole("button", { name: "Review identity" });
+    const reviewButton = within(newerServerItem).getByRole("button", { name: "复核身份" });
     expect((reviewButton as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(reviewButton);
 
@@ -2055,15 +2055,15 @@ describe("nearby servers panel", () => {
 describe("startup panel", () => {
   it("reports that ShaPrint starts with the user's login and how to quit it", async () => {
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Startup" });
+    const panel = await screen.findByRole("region", { name: "启动" });
     const toggle = (await within(panel).findByLabelText(
-      /Start ShaPrint when I sign in to Windows/,
+      /我登录 Windows 时启动 ShaPrint/,
     )) as HTMLInputElement;
     expect(toggle.checked).toBe(true);
     expect(panel.textContent).toContain("shaprint-desktop.exe");
-    expect(panel.textContent).toContain("Quit ShaPrint");
+    expect(panel.textContent).toContain("退出 ShaPrint");
   });
 
   it("turns login startup off without asking for administrator permission", async () => {
@@ -2073,11 +2073,11 @@ describe("startup panel", () => {
       command: '"C:\\Program Files\\ShaPrint\\shaprint-desktop.exe" --background',
     });
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Startup" });
+    const panel = await screen.findByRole("region", { name: "启动" });
     const toggle = (await within(panel).findByLabelText(
-      /Start ShaPrint when I sign in to Windows/,
+      /我登录 Windows 时启动 ShaPrint/,
     )) as HTMLInputElement;
     fireEvent.click(toggle);
 
@@ -2093,14 +2093,14 @@ describe("startup panel", () => {
       command: "",
     });
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Startup" });
+    const panel = await screen.findByRole("region", { name: "启动" });
     expect(
-      await within(panel).findByText(/Starting ShaPrint at login is available on Windows/i),
+      await within(panel).findByText(/在 Windows 上可用时，可在登录时启动 ShaPrint/),
     ).toBeTruthy();
     expect(
-      within(panel).queryByLabelText(/Start ShaPrint when I sign in to Windows/),
+      within(panel).queryByLabelText(/我登录 Windows 时启动 ShaPrint/),
     ).toBeNull();
   });
 });
@@ -2117,12 +2117,12 @@ describe("machine control mode", () => {
 
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Client printing ready. Open service diagnostics",
+        name: "客户端打印就绪。打开服务诊断",
       }),
     );
-    const dialog = await screen.findByRole("dialog", { name: "Print service status" });
+    const dialog = await screen.findByRole("dialog", { name: "打印服务状态" });
 
-    fireEvent.click(await within(dialog).findByRole("button", { name: "Stop ShaPrint daemon" }));
+    fireEvent.click(await within(dialog).findByRole("button", { name: "停止 ShaPrint 守护进程" }));
 
     const alert = await within(dialog).findByRole("alert");
     expect(alert.textContent).toContain("not-authorized");
@@ -2130,9 +2130,9 @@ describe("machine control mode", () => {
     expect(alert.textContent).toContain("No changes were made.");
     expect(ipc.shutdownDaemon).toHaveBeenCalledTimes(1);
     // The declined prompt changed nothing: the Client proxy is still reported running.
-    const proxy = within(dialog).getByRole("region", { name: "Client proxy" });
+    const proxy = within(dialog).getByRole("region", { name: "客户端代理" });
     expect(proxy.getAttribute("data-state")).toBe("running");
-    expect(within(dialog).getByRole("button", { name: "Stop ShaPrint daemon" })).toBeTruthy();
+    expect(within(dialog).getByRole("button", { name: "停止 ShaPrint 守护进程" })).toBeTruthy();
   });
 
   it("explains an unreachable machine daemon with the command that starts it again", async () => {
@@ -2145,12 +2145,12 @@ describe("machine control mode", () => {
 
     fireEvent.click(
       await screen.findByRole("button", {
-        name: /Machine daemon unavailable\. Open service diagnostics/,
+        name: /机器守护进程不可用。打开服务诊断/,
       }),
     );
-    const dialog = await screen.findByRole("dialog", { name: "Print service status" });
+    const dialog = await screen.findByRole("dialog", { name: "打印服务状态" });
 
-    expect(within(dialog).getByText("Machine daemon unavailable")).toBeTruthy();
+    expect(within(dialog).getByText("机器守护进程不可用")).toBeTruthy();
     const recovery = await within(dialog).findAllByText(/sudo systemctl start shaprintd/);
     expect(recovery.length).toBeGreaterThan(0);
   });
@@ -2163,39 +2163,39 @@ describe("machine control mode", () => {
       command: "",
     });
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Startup" });
-    expect(await within(panel).findByText(/system service starts with this machine/i)).toBeTruthy();
-    expect(await within(panel).findByText(/closing the window only closes the gui/i)).toBeTruthy();
+    const panel = await screen.findByRole("region", { name: "启动" });
+    expect(await within(panel).findByText(/ShaPrint 系统服务随本机启动/)).toBeTruthy();
+    expect(await within(panel).findByText(/关闭窗口仅关闭图形界面/)).toBeTruthy();
     expect(within(panel).queryByText(/sign in to Windows/i)).toBeNull();
     expect(
-      within(panel).queryByLabelText(/Start ShaPrint when I sign in to Windows/),
+      within(panel).queryByLabelText(/我登录 Windows 时启动 ShaPrint/),
     ).toBeNull();
   });
 
   it("points machine-mode updates at the package manager instead of the in-app updater", async () => {
     vi.mocked(ipc.getControlMode).mockResolvedValue("machine");
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Software updates" });
-    const notes = await within(panel).findAllByText(/Updates are installed by your package manager/i);
+    const panel = await screen.findByRole("region", { name: "软件更新" });
+    const notes = await within(panel).findAllByText(/更新由你的软件包管理器安装/);
     expect(notes.length).toBeGreaterThan(0);
     expect((await within(panel).findAllByText(/sudo dnf upgrade shaprint/)).length).toBeGreaterThan(0);
-    expect(within(panel).queryByRole("button", { name: "Check for updates" })).toBeNull();
+    expect(within(panel).queryByRole("button", { name: "检查更新" })).toBeNull();
     expect(within(panel).queryByText(/Restart Now/i)).toBeNull();
   });
 
   it("keeps the in-app wording when the shell administers the local runtime", async () => {
     vi.mocked(ipc.getControlMode).mockResolvedValue("local");
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Software updates" });
-    expect(within(panel).getByRole("button", { name: "Check for updates" })).toBeTruthy();
-    const startupPanel = await screen.findByRole("region", { name: "Startup" });
-    expect(startupPanel.textContent).toContain("Start ShaPrint when you sign in to Windows.");
+    const panel = await screen.findByRole("region", { name: "软件更新" });
+    expect(within(panel).getByRole("button", { name: "检查更新" })).toBeTruthy();
+    const startupPanel = await screen.findByRole("region", { name: "启动" });
+    expect(startupPanel.textContent).toContain("我登录 Windows 时启动 ShaPrint");
   });
 });
 
@@ -2203,14 +2203,14 @@ describe("previous app panel", () => {
   it("reports the Network Channel it took and asks for the printers again", async () => {
     vi.mocked(legacyApi.getLegacyImportReport).mockResolvedValue(LEGACY_REPORT);
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Previous ShaPrint app" });
+    const panel = await screen.findByRole("region", { name: "以前的 ShaPrint 应用" });
     expect(await within(panel).findByText(LEGACY_REPORT.channel_note)).toBeTruthy();
-    expect(within(panel).getByText(/Network Channel: Imported/)).toBeTruthy();
+    expect(within(panel).getByText(/网络通道：已导入/)).toBeTruthy();
     // The previous app's queues are never activated: the user selects them again here.
     expect(within(panel).getByTestId("reselect-queues").textContent).toContain(
-      "Select your printers again",
+      "请重新选择你的打印机",
     );
     expect(within(panel).getByText("Automatic updates")).toBeTruthy();
     expect(within(panel).getByText(/does not update itself yet/)).toBeTruthy();
@@ -2223,9 +2223,9 @@ describe("previous app panel", () => {
       return () => {};
     });
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Previous ShaPrint app" });
+    const panel = await screen.findByRole("region", { name: "以前的 ShaPrint 应用" });
     await waitFor(() => expect(publish).toBeDefined());
     publish?.(LEGACY_REPORT);
 
@@ -2234,14 +2234,14 @@ describe("previous app panel", () => {
 
   it("says nothing was found when there was no previous app", async () => {
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Previous ShaPrint app" });
+    const panel = await screen.findByRole("region", { name: "以前的 ShaPrint 应用" });
     expect(
-      await within(panel).findByText(/No settings from a previous ShaPrint app were found/i),
+      await within(panel).findByText(/在这台电脑上未找到旧版 ShaPrint 应用的设置/),
     ).toBeTruthy();
     expect(within(panel).queryByTestId("reselect-queues")).toBeNull();
-    expect(within(panel).queryByRole("button", { name: "Import again" })).toBeNull();
+    expect(within(panel).queryByRole("button", { name: "重新导入" })).toBeNull();
   });
 
   it("checks again without asking for administrator permission", async () => {
@@ -2252,10 +2252,10 @@ describe("previous app panel", () => {
     });
     vi.mocked(legacyApi.importLegacySettings).mockResolvedValue(LEGACY_REPORT);
     render(<App />);
-    navigateTo("Settings");
+    navigateTo("设置");
 
-    const panel = await screen.findByRole("region", { name: "Previous ShaPrint app" });
-    fireEvent.click(await within(panel).findByRole("button", { name: "Import again" }));
+    const panel = await screen.findByRole("region", { name: "以前的 ShaPrint 应用" });
+    fireEvent.click(await within(panel).findByRole("button", { name: "重新导入" }));
 
     await waitFor(() => expect(legacyApi.importLegacySettings).toHaveBeenCalledTimes(1));
     expect(await within(panel).findByText(LEGACY_REPORT.channel_note)).toBeTruthy();
@@ -2277,13 +2277,13 @@ describe("system diagnostics and readiness", () => {
     });
     render(<App />);
     fireEvent.click(await screen.findByRole("button", {
-      name: /Client printing ready\. Open service diagnostics/i,
+      name: /客户端打印就绪。打开服务诊断/,
     }));
-    const dialog = await screen.findByRole("dialog", { name: "Print service status" });
-    expect(await within(dialog).findByText("Not checked")).toBeTruthy();
+    const dialog = await screen.findByRole("dialog", { name: "打印服务状态" });
+    expect(await within(dialog).findByText("未检查")).toBeTruthy();
     expect(within(dialog).queryByText("Failed")).toBeNull();
     for (const count of [2, 3]) {
-      fireEvent.click(within(dialog).getByRole("button", { name: "Refresh All" }));
+      fireEvent.click(within(dialog).getByRole("button", { name: "全部刷新" }));
       await waitFor(() => expect(ipc.getDiagnostics).toHaveBeenCalledTimes(count));
     }
     expect(ipc.startService).not.toHaveBeenCalled();
@@ -2341,19 +2341,19 @@ describe("system diagnostics and readiness", () => {
 
     fireEvent.click(
       await screen.findByRole("button", {
-        name: /Client printing ready\. Open service diagnostics/i,
+        name: /客户端打印就绪。打开服务诊断/,
       }),
     );
 
-    const dialog = await screen.findByRole("dialog", { name: "Print service status" });
+    const dialog = await screen.findByRole("dialog", { name: "打印服务状态" });
     expect(dialog).toBeTruthy();
 
     // Subsystem checks are rendered
-    expect(within(dialog).getByRole("heading", { name: "Daemon service" })).toBeTruthy();
-    expect(within(dialog).getByRole("heading", { name: "Network ports" })).toBeTruthy();
-    expect(within(dialog).getByRole("heading", { name: "CUPS printing system" })).toBeTruthy();
-    expect(within(dialog).getByRole("heading", { name: "Network Channel credential" })).toBeTruthy();
-    expect(within(dialog).getByRole("heading", { name: "System firewall" })).toBeTruthy();
+    expect(within(dialog).getByRole("heading", { name: "守护进程服务" })).toBeTruthy();
+    expect(within(dialog).getByRole("heading", { name: "网络端口" })).toBeTruthy();
+    expect(within(dialog).getByRole("heading", { name: "CUPS 打印系统" })).toBeTruthy();
+    expect(within(dialog).getByRole("heading", { name: "网络通道凭据" })).toBeTruthy();
+    expect(within(dialog).getByRole("heading", { name: "系统防火墙" })).toBeTruthy();
 
     // Failure codes are presented
     expect(within(dialog).getByText("server-unavailable")).toBeTruthy();
@@ -2386,11 +2386,11 @@ describe("system diagnostics and readiness", () => {
 
     fireEvent.click(
       await screen.findByRole("button", {
-        name: /Client \+ server ready\. Open service diagnostics/i,
+        name: /客户端与服务端就绪。打开服务诊断/,
       }),
     );
 
-    const dialog = await screen.findByRole("dialog", { name: "Print service status" });
+    const dialog = await screen.findByRole("dialog", { name: "打印服务状态" });
     expect(within(dialog).getByTestId("readiness-status").textContent).toBe("client-and-server-ready");
     expect(within(dialog).getByText(/HP-LaserJet-Shared, Receipt-Printer/)).toBeTruthy();
     expect(within(dialog).getByText(/Office-Color-Queue/)).toBeTruthy();
@@ -2418,11 +2418,11 @@ describe("system diagnostics and readiness", () => {
 
     fireEvent.click(
       await screen.findByRole("button", {
-        name: /Client printing ready\. Open service diagnostics/i,
+        name: /客户端打印就绪。打开服务诊断/,
       }),
     );
 
-    const dialog = await screen.findByRole("dialog", { name: "Print service status" });
+    const dialog = await screen.findByRole("dialog", { name: "打印服务状态" });
     expect(dialog.textContent).not.toContain(SECRET_CHANNEL);
     expect(dialog.textContent).not.toContain(KEYED_URI);
     expect(dialog.textContent).not.toContain("secret-token");
@@ -2444,17 +2444,17 @@ it("sends one explicit native test print and asks for its physical result", asyn
     return Promise.resolve(ready);
   });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  const send = await screen.findByRole("button", { name: "Send test print" });
-  expect(screen.getByText(/Requested media: iso_a4_210x297mm/)).toBeTruthy();
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  const send = await screen.findByRole("button", { name: "发送测试打印" });
+  expect(screen.getByText(/请求介质：iso_a4_210x297mm/)).toBeTruthy();
   expect(vi.mocked(invoke).mock.calls.some(([command]) => command === "send_test_print")).toBe(false);
   fireEvent.click(send); fireEvent.click(send);
   expect(send.hasAttribute("disabled")).toBe(true);
   expect(vi.mocked(invoke).mock.calls.filter(([command]) => command === "send_test_print")).toHaveLength(1);
   await act(async () => { finishSend({ ...ready, submission: "accepted", test_print_enabled: false }); });
-  expect(screen.getByText(/Physical output is unconfirmed/)).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Printed correctly" }));
-  expect(await screen.findByText(/You confirmed correct physical output/)).toBeTruthy();
+  expect(screen.getByText(/物理输出仍未确认/)).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "打印正确" }));
+  expect(await screen.findByText(/您已确认物理输出正确/)).toBeTruthy();
   expect(vi.mocked(invoke)).toHaveBeenCalledWith("confirm_test_print", { sessionId: 7, result: "correct" });
 });
 
@@ -2472,24 +2472,24 @@ it.each(["accepted", "uncertain", "rejected"])("keeps %s submission separate fro
     return Promise.resolve(ready);
   });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Send test print" }));
-  await waitFor(() => expect(screen.getByRole("button", { name: "Check again" }).hasAttribute("disabled")).toBe(false));
-  expect(screen.getByRole("button", { name: "Retry test print" }).hasAttribute("disabled")).toBe(true);
-  expect(screen.getByText(/Earlier work may still print downstream/)).toBeTruthy();
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "发送测试打印" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "再次检查" }).hasAttribute("disabled")).toBe(false));
+  expect(screen.getByRole("button", { name: "重试测试打印" }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByText(/之前的任务仍可能在下游打印/)).toBeTruthy();
   if (submission === "rejected") {
-    expect(screen.queryByRole("button", { name: "Printed correctly" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "打印正确" })).toBeNull();
   } else {
-    fireEvent.click(screen.getByRole("button", { name: "No output" }));
-    expect(await screen.findByText(/You reported no output/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Incorrect output" }));
-    const symptoms = await screen.findByRole("combobox", { name: "Observed symptom" });
+    fireEvent.click(screen.getByRole("button", { name: "无输出" }));
+    expect(await screen.findByText(/您报告无输出/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "输出不正确" }));
+    const symptoms = await screen.findByRole("combobox", { name: "观察到的症状" });
     fireEvent.change(symptoms, { target: { value: "clipping" } });
-    expect(screen.getByText(/Compare Requested media with Loaded media in the printer tray and Server queue/)).toBeTruthy();
+    expect(screen.getByText(/将“请求介质”与打印机纸盒及服务器队列中的“已装载介质”进行对比/)).toBeTruthy();
   }
-  await waitFor(() => expect(screen.getByRole("button", { name: "Check again" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "Check again" }));
-  await waitFor(() => expect(screen.getByRole("button", { name: "Retry test print" }).hasAttribute("disabled")).toBe(false));
+  await waitFor(() => expect(screen.getByRole("button", { name: "再次检查" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "再次检查" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "重试测试打印" }).hasAttribute("disabled")).toBe(false));
   expect(vi.mocked(invoke).mock.calls.filter(([command]) => command === "send_test_print")).toHaveLength(1);
 });
 
@@ -2503,22 +2503,22 @@ it("discards a late send callback after closure and reopening", async () => {
   vi.mocked(invoke).mockImplementation((command) => command === "send_test_print"
     ? new Promise((resolve) => { finish = resolve; }) : Promise.resolve(ready));
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Send test print" }));
-  fireEvent.click(screen.getByRole("button", { name: "Close troubleshooting" }));
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "发送测试打印" }));
+  fireEvent.click(screen.getByRole("button", { name: "关闭故障排查" }));
   expect(vi.mocked(invoke)).toHaveBeenCalledWith("close_test_print_session", { sessionId: 10 });
-  fireEvent.click(screen.getByRole("button", { name: "Troubleshoot Office" }));
-  await screen.findByRole("button", { name: "Send test print" });
+  fireEvent.click(screen.getByRole("button", { name: "对 Office 进行故障排查" }));
+  await screen.findByRole("button", { name: "发送测试打印" });
   await act(async () => { finish({ ...ready, submission: "accepted", test_print_enabled: false }); });
-  expect(screen.queryByRole("button", { name: "Printed correctly" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "打印正确" })).toBeNull();
   expect(vi.mocked(invoke).mock.calls.filter(([command]) => command === "send_test_print")).toHaveLength(1);
 });
 
 it.each([
-  ["clipping", /outer border patterns \(2 mm, 5 mm, 10 mm\)/, /Compare Requested media with Loaded media/],
-  ["shifted", /50 mm center alignment cross/, /Compare Requested media with Loaded media/],
-  ["incorrect-size", /page scaling and paper dimensions/, /Compare Requested media with Loaded media/],
-  ["blank", /ink, toner, or ribbon supplies/, /native test page directly on the Server/],
+  ["clipping", /外边框图案（2 毫米、5 毫米、10 毫米）/, /将“请求介质”.*“已装载介质”进行对比/],
+  ["shifted", /50 毫米的中心对齐十字/, /将“请求介质”.*“已装载介质”进行对比/],
+  ["incorrect-size", /页面缩放与纸张尺寸/, /将“请求介质”.*“已装载介质”进行对比/],
+  ["blank", /墨盒、碳粉或色带耗材/, /尝试在服务器上直接打印本机测试页/],
 ])("reports the %s symptom and records it without claiming a root cause", async (symptom, specific, media) => {
   const target = { queue_name: "Office", server_address: "192.0.2.10:48631", printer_name: "Office" };
   vi.mocked(serverConnections.listRecognisedClientQueues).mockResolvedValue([target]);
@@ -2534,14 +2534,14 @@ it.each([
     return Promise.resolve(ready);
   });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Incorrect output" }));
-  const select = await screen.findByRole("combobox", { name: "Observed symptom" });
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "输出不正确" }));
+  const select = await screen.findByRole("combobox", { name: "观察到的症状" });
   expect(screen.queryByText(specific)).toBeNull();
   fireEvent.change(select, { target: { value: symptom } });
   expect(await screen.findByText(specific)).toBeTruthy();
   expect(screen.getByText(media)).toBeTruthy();
-  expect(screen.getAllByText(/does not prove/i).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/此症状用于引导排查，不构成/i).length).toBeGreaterThan(0);
   expect(vi.mocked(invoke)).toHaveBeenCalledWith("confirm_test_print", {
     sessionId: 11, result: "incorrect", symptom,
   });
@@ -2568,10 +2568,10 @@ it("keeps the symptom select locked while a confirmation is pending so no select
     return Promise.resolve(ready);
   });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Incorrect output" }));
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "输出不正确" }));
   await act(async () => { finishConfirm({ ...ready, physical_result: "incorrect" }); });
-  const select = await screen.findByRole("combobox", { name: "Observed symptom" });
+  const select = await screen.findByRole("combobox", { name: "观察到的症状" });
   await waitFor(() => expect(select.hasAttribute("disabled")).toBe(false));
   fireEvent.change(select, { target: { value: "blank" } });
   expect(select.hasAttribute("disabled")).toBe(true);
@@ -2581,7 +2581,7 @@ it("keeps the symptom select locked while a confirmation is pending so no select
   await act(async () => { finishConfirm({ ...ready, physical_result: "incorrect", user_symptom: "blank" }); });
   await waitFor(() => expect(select.hasAttribute("disabled")).toBe(false));
   expect((select as HTMLSelectElement).value).toBe("blank");
-  expect(screen.getByText(/ink, toner, or ribbon supplies/)).toBeTruthy();
+  expect(screen.getByText(/墨盒、碳粉或色带耗材/)).toBeTruthy();
 });
 
 it("explains no-output and delayed output across every visibility limit", async () => {
@@ -2595,14 +2595,14 @@ it("explains no-output and delayed output across every visibility limit", async 
     ? Promise.resolve({ ...ready, physical_result: "no-output" })
     : Promise.resolve(ready));
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  expect(await screen.findByText(/Wait for delayed output before answering/)).toBeTruthy();
-  fireEvent.click(await screen.findByRole("button", { name: "No output" }));
-  const guidance = await screen.findByText(/You reported no output/);
-  expect(guidance.textContent).toContain("native Client queue");
-  expect(guidance.textContent).toContain("ShaPrint on the Server");
-  expect(guidance.textContent).toContain("physical printer");
-  expect(guidance.textContent).toContain("may still produce a page");
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  expect(await screen.findByText(/请在回答前等待延迟输出/)).toBeTruthy();
+  fireEvent.click(await screen.findByRole("button", { name: "无输出" }));
+  const guidance = await screen.findByText(/您报告无输出/);
+  expect(guidance.textContent).toContain("本机客户端队列");
+  expect(guidance.textContent).toContain("服务器上的 ShaPrint");
+  expect(guidance.textContent).toContain("物理打印机");
+  expect(guidance.textContent).toContain("仍可能产生一页");
   expect(vi.mocked(invoke).mock.calls.filter(([command]) => command === "send_test_print")).toHaveLength(0);
 });
 
@@ -2632,30 +2632,30 @@ it("offers an explicit retry only after fresh checks and the duplicate-output wa
     return Promise.resolve(ready);
   });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Send test print" }));
-  expect(await screen.findByText(/Empty local queue state does not establish downstream cancellation/)).toBeTruthy();
-  expect(screen.getByText(/Earlier work may still print downstream/)).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "No output" }));
-  expect(await screen.findByText(/You reported no output/)).toBeTruthy();
-  await waitFor(() => expect(screen.getByRole("button", { name: "Check again" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "Check again" }));
-  const retry = await screen.findByRole("button", { name: "Retry test print" });
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "发送测试打印" }));
+  expect(await screen.findByText(/本地队列为空并不代表下游已取消/)).toBeTruthy();
+  expect(screen.getByText(/之前的任务仍可能在下游打印/)).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "无输出" }));
+  expect(await screen.findByText(/您报告无输出/)).toBeTruthy();
+  await waitFor(() => expect(screen.getByRole("button", { name: "再次检查" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "再次检查" }));
+  const retry = await screen.findByRole("button", { name: "重试测试打印" });
   await waitFor(() => expect(retry.hasAttribute("disabled")).toBe(false));
   expect(sends.count).toBe(1);
-  expect(screen.getByText(/Empty local queue state does not establish downstream cancellation/)).toBeTruthy();
+  expect(screen.getByText(/本地队列为空并不代表下游已取消/)).toBeTruthy();
   fireEvent.click(retry);
   await waitFor(() => expect(sends.count).toBe(2));
-  expect(screen.getByRole("button", { name: "Retry test print" }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: "重试测试打印" }).hasAttribute("disabled")).toBe(true);
   // A retry clears the earlier classification: the next incorrect report starts unclassified.
-  await waitFor(() => expect(screen.getByRole("button", { name: "Incorrect output" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "Incorrect output" }));
-  const selectAfterRetry = await screen.findByRole("combobox", { name: "Observed symptom" });
+  await waitFor(() => expect(screen.getByRole("button", { name: "输出不正确" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "输出不正确" }));
+  const selectAfterRetry = await screen.findByRole("combobox", { name: "观察到的症状" });
   expect((selectAfterRetry as HTMLSelectElement).value).toBe("");
 });
 
 it.each([
-  ["newly busy queue", { check: "pending-jobs", status: "failed", detail: "Print jobs are pending.", code: "invalid-state" }, false, "blocked until this Client queue is known to be empty"],
+  ["newly busy queue", { check: "pending-jobs", status: "failed", detail: "Print jobs are pending.", code: "invalid-state" }, false, "在此客户端队列确认为空之前"],
   ["changed server trust", { check: "server-identity", status: "failed", detail: "The server certificate has changed since it was approved.", code: "server-identity-changed" }, true, "The server certificate has changed"],
 ])("keeps the retry blocked after fresh checks report a %s", async (_label, failedCheck, queueEmpty, expectedDetail) => {
   const target = { queue_name: "Office", server_address: "192.0.2.10:48631", printer_name: "Office" };
@@ -2680,13 +2680,13 @@ it.each([
     return Promise.resolve(ready);
   });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Send test print" }));
-  fireEvent.click(await screen.findByRole("button", { name: "No output" }));
-  await screen.findByText(/You reported no output/);
-  await waitFor(() => expect(screen.getByRole("button", { name: "Check again" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "Check again" }));
-  const retry = await screen.findByRole("button", { name: "Retry test print" });
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "发送测试打印" }));
+  fireEvent.click(await screen.findByRole("button", { name: "无输出" }));
+  await screen.findByText(/您报告无输出/);
+  await waitFor(() => expect(screen.getByRole("button", { name: "再次检查" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "再次检查" }));
+  const retry = await screen.findByRole("button", { name: "重试测试打印" });
   await waitFor(() => expect(screen.getByText(expectedDetail, { exact: false })).toBeTruthy());
   expect(retry.hasAttribute("disabled")).toBe(true);
   expect(sends.count).toBe(1);
@@ -2713,24 +2713,24 @@ it("previews and copies a passive-diagnostics report without needing a test prin
   const writeText = vi.fn().mockResolvedValue(undefined);
   Object.assign(navigator, { clipboard: { writeText } });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Preview report" }));
-  const report = await screen.findByText(/ShaPrint troubleshooting report/);
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "预览报告" }));
+  const report = await screen.findByText(/ShaPrint 故障排查报告/);
   const text = report.closest("pre")?.textContent ?? "";
-  expect(text).toContain(`App version: ${CLIENT_VERSION}`);
-  expect(text).toContain("Client queue: Office");
-  expect(text).toContain("Server: 192.0.2.10:48631");
-  expect(text).toContain("- Native print spooler: Passed");
-  expect(text).toContain("- Pending print jobs: Failed [invalid-state]");
-  expect(text).toContain("- Server identity: Failed [server-identity-changed]");
-  expect(text).toContain("Attempted actions:");
-  expect(text).toContain("- none recorded");
-  expect(text).toContain("Session-only report.");
+  expect(text).toContain(`应用版本：${CLIENT_VERSION}`);
+  expect(text).toContain("客户端队列：Office");
+  expect(text).toContain("服务器：192.0.2.10:48631");
+  expect(text).toContain("- 本机打印假脱机：通过");
+  expect(text).toContain("- 待处理的打印任务：失败 [invalid-state]");
+  expect(text).toContain("- 服务器身份：失败 [server-identity-changed]");
+  expect(text).toContain("已尝试的操作：");
+  expect(text).toContain("- 无记录");
+  expect(text).toContain("仅本次会话的报告");
   // Passive findings carry no test print session: those lines are absent, not invented.
   expect(text).not.toContain("Submission:");
   expect(text).not.toContain("Physical result:");
-  fireEvent.click(screen.getByRole("button", { name: "Copy report" }));
-  await screen.findByText(/Report copied to the clipboard/);
+  fireEvent.click(screen.getByRole("button", { name: "复制报告" }));
+  await screen.findByText(/报告已复制到剪贴板/);
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith(text);
 });
@@ -2748,16 +2748,16 @@ it("includes later session outcomes in the report as they become available", asy
   };
   vi.mocked(invoke).mockResolvedValue(withSession);
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Preview report" }));
-  const text = (await screen.findByText(/ShaPrint troubleshooting report/)).closest("pre")?.textContent ?? "";
-  expect(text).toContain("Requested media: iso_a4_210x297mm");
-  expect(text).toContain("Submission: uncertain");
-  expect(text).toContain("Physical result: incorrect");
-  expect(text).toContain("Observed symptom: clipping");
-  expect(text).toContain("- Send test print: Accepted by the native spooler");
-  expect(text).toContain("- Retry test print: Blocked by fresh checks");
-  expect(text).not.toContain("- none recorded");
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "预览报告" }));
+  const text = (await screen.findByText(/ShaPrint 故障排查报告/)).closest("pre")?.textContent ?? "";
+  expect(text).toContain("请求介质：iso_a4_210x297mm");
+  expect(text).toContain("提交状态：uncertain");
+  expect(text).toContain("物理输出结果：incorrect");
+  expect(text).toContain("观察到的症状：clipping");
+  expect(text).toContain("- 发送测试打印：本机假脱机已接受");
+  expect(text).toContain("- 重试测试打印：被最新检查阻止");
+  expect(text).not.toContain("- 无记录");
 });
 
 it("keeps check prose and protected values out of the previewed report", async () => {
@@ -2774,13 +2774,13 @@ it("keeps check prose and protected values out of the previewed report", async (
   };
   vi.mocked(invoke).mockResolvedValue(tainted);
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Preview report" }));
-  const text = (await screen.findByText(/ShaPrint troubleshooting report/)).closest("pre")?.textContent ?? "";
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "预览报告" }));
+  const text = (await screen.findByText(/ShaPrint 故障排查报告/)).closest("pre")?.textContent ?? "";
   expect(text).not.toContain(secret);
   expect(text).not.toContain("ipps://");
   expect(text).not.toContain("driver said");
-  expect(text).toContain("- Network Channel authorization: Failed [not-authorized]");
+  expect(text).toContain("- 网络通道授权：失败 [not-authorized]");
 });
 
 it("shows copy failure visibly instead of an unsafe fallback", async () => {
@@ -2790,13 +2790,13 @@ it("shows copy failure visibly instead of an unsafe fallback", async () => {
   const writeText = vi.fn().mockRejectedValue(new Error("clipboard denied"));
   Object.assign(navigator, { clipboard: { writeText } });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Preview report" }));
-  fireEvent.click(screen.getByRole("button", { name: "Copy report" }));
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  fireEvent.click(await screen.findByRole("button", { name: "预览报告" }));
+  fireEvent.click(screen.getByRole("button", { name: "复制报告" }));
   const alert = await screen.findByRole("alert");
-  expect(alert.textContent).toContain("Copy failed. Select the report text above and copy it manually.");
+  expect(alert.textContent).toContain("复制失败。请选中上方报告文本并手动复制。");
   expect(writeText).toHaveBeenCalledTimes(1);
-  expect(screen.queryByText(/Report copied to the clipboard/)).toBeNull();
+  expect(screen.queryByText(/报告已复制到剪贴板/)).toBeNull();
   // The preview remains the only payload; nothing was printed, saved, or resent.
   expect(vi.mocked(invoke).mock.calls.some(([command]) => command === "send_test_print")).toBe(false);
 });
@@ -2864,51 +2864,51 @@ it("qualifies the assembled journey through the visible flow and reflects it in 
   render(<App />);
 
   // Diagnosis observes the stopped proxy; the explicit recovery action is recorded.
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
   expect(within(dialog).getByText(/The client proxy is not running/)).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Send test print" }).hasAttribute("disabled")).toBe(true);
-  fireEvent.click(screen.getByRole("button", { name: "Start client proxy" }));
-  await waitFor(() => expect(screen.getByRole("button", { name: "Send test print" }).hasAttribute("disabled")).toBe(false));
+  expect(screen.getByRole("button", { name: "发送测试打印" }).hasAttribute("disabled")).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "启动客户端代理" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "发送测试打印" }).hasAttribute("disabled")).toBe(false));
 
   // Native send, no-output report, then incorrect output with a symptom.
-  fireEvent.click(screen.getByRole("button", { name: "Send test print" }));
-  expect(await screen.findByText(/Physical output is unconfirmed/)).toBeTruthy();
-  await waitFor(() => expect(screen.getByRole("button", { name: "No output" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "No output" }));
-  expect(await screen.findByText(/You reported no output/)).toBeTruthy();
-  await waitFor(() => expect(screen.getByRole("button", { name: "Incorrect output" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "Incorrect output" }));
-  fireEvent.change(await screen.findByRole("combobox", { name: "Observed symptom" }), { target: { value: "blank" } });
-  expect(await screen.findByText(/ink, toner, or ribbon supplies/)).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "发送测试打印" }));
+  expect(await screen.findByText(/物理输出仍未确认/)).toBeTruthy();
+  await waitFor(() => expect(screen.getByRole("button", { name: "无输出" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "无输出" }));
+  expect(await screen.findByText(/您报告无输出/)).toBeTruthy();
+  await waitFor(() => expect(screen.getByRole("button", { name: "输出不正确" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "输出不正确" }));
+  fireEvent.change(await screen.findByRole("combobox", { name: "观察到的症状" }), { target: { value: "blank" } });
+  expect(await screen.findByText(/墨盒、碳粉或色带耗材/)).toBeTruthy();
 
   // Fresh checks, then the explicit retry relabeled as such.
-  await waitFor(() => expect(screen.getByRole("button", { name: "Check again" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "Check again" }));
-  const retry = await screen.findByRole("button", { name: "Retry test print" });
+  await waitFor(() => expect(screen.getByRole("button", { name: "再次检查" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "再次检查" }));
+  const retry = await screen.findByRole("button", { name: "重试测试打印" });
   await waitFor(() => expect(retry.hasAttribute("disabled")).toBe(false));
   fireEvent.click(retry);
-  await waitFor(() => expect(screen.getByText(/Physical output is unconfirmed/)).toBeTruthy());
+  await waitFor(() => expect(screen.getByText(/物理输出仍未确认/)).toBeTruthy());
 
   // The copied report reflects the integrated outcomes of the whole journey.
-  await waitFor(() => expect(screen.getByRole("button", { name: "Incorrect output" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByRole("button", { name: "Incorrect output" }));
-  fireEvent.change(await screen.findByRole("combobox", { name: "Observed symptom" }), { target: { value: "blank" } });
-  await screen.findByText(/ink, toner, or ribbon supplies/);
-  fireEvent.click(screen.getByRole("button", { name: "Preview report" }));
-  const report = await screen.findByText(/ShaPrint troubleshooting report/);
+  await waitFor(() => expect(screen.getByRole("button", { name: "输出不正确" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "输出不正确" }));
+  fireEvent.change(await screen.findByRole("combobox", { name: "观察到的症状" }), { target: { value: "blank" } });
+  await screen.findByText(/墨盒、碳粉或色带耗材/);
+  fireEvent.click(screen.getByRole("button", { name: "预览报告" }));
+  const report = await screen.findByText(/ShaPrint 故障排查报告/);
   const text = report.closest("pre")?.textContent ?? "";
-  expect(text).toContain(`App version: ${CLIENT_VERSION}`);
-  expect(text).toContain("- Client proxy: Passed");
-  expect(text).toContain("- Start client proxy: Succeeded");
-  expect(text).toContain("- Send test print: Accepted by the native spooler");
-  expect(text).toContain("- Retry test print: Accepted by the native spooler");
-  expect(text).toContain("Submission: accepted");
-  expect(text).toContain("Observed symptom: blank");
+  expect(text).toContain(`应用版本：${CLIENT_VERSION}`);
+  expect(text).toContain("- 客户端代理：通过");
+  expect(text).toContain("- 启动客户端代理：成功");
+  expect(text).toContain("- 发送测试打印：本机假脱机已接受");
+  expect(text).toContain("- 重试测试打印：本机假脱机已接受");
+  expect(text).toContain("提交状态：accepted");
+  expect(text).toContain("观察到的症状：blank");
   // Check prose never reaches the report the user copies.
   expect(text).not.toContain(canary);
-  fireEvent.click(screen.getByRole("button", { name: "Copy report" }));
-  await screen.findByText(/Report copied to the clipboard/);
+  fireEvent.click(screen.getByRole("button", { name: "复制报告" }));
+  await screen.findByText(/报告已复制到剪贴板/);
   expect(writeText).toHaveBeenCalledWith(text);
 });
 
@@ -2924,13 +2924,13 @@ it("records a denied client-proxy recovery without unlocking the send action", a
   vi.mocked(invoke).mockResolvedValue(failed);
   vi.mocked(ipc.startService).mockRejectedValue({ code: "not-authorized", message: "administrator permission was not granted" });
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
-  fireEvent.click(within(dialog).getByRole("button", { name: "Start client proxy" }));
-  const attempted = await within(dialog).findByLabelText("Attempted recovery actions");
-  expect(within(attempted).getByText("Start client proxy")).toBeTruthy();
-  expect(within(attempted).getByText("Authorization denied")).toBeTruthy();
-  await waitFor(() => expect(screen.getByRole("button", { name: "Send test print" }).hasAttribute("disabled")).toBe(true));
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
+  fireEvent.click(within(dialog).getByRole("button", { name: "启动客户端代理" }));
+  const attempted = await within(dialog).findByLabelText("已尝试的恢复操作");
+  expect(within(attempted).getByText("启动客户端代理")).toBeTruthy();
+  expect(within(attempted).getByText("授权被拒绝")).toBeTruthy();
+  await waitFor(() => expect(screen.getByRole("button", { name: "发送测试打印" }).hasAttribute("disabled")).toBe(true));
   expect(screen.getByText(/The client proxy is not running/)).toBeTruthy();
 });
 
@@ -2948,11 +2948,11 @@ it("records a partially completed recovery accurately instead of claiming succes
     new Error("the queue repair partially completed"),
   );
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Troubleshoot Office" }));
-  const dialog = await screen.findByRole("dialog", { name: "Troubleshoot printer" });
-  fireEvent.click(within(dialog).getByRole("button", { name: "Repair Client queue" }));
-  const attempted = await within(dialog).findByLabelText("Attempted recovery actions");
-  expect(within(attempted).getByText("Repair Client queue")).toBeTruthy();
-  expect(within(attempted).getByText("Partially completed")).toBeTruthy();
-  expect(within(dialog).getByText(/Attempted recovery actions do not claim physical printing is restored/)).toBeTruthy();
+  fireEvent.click(await screen.findByRole("button", { name: "对 Office 进行故障排查" }));
+  const dialog = await screen.findByRole("dialog", { name: "故障排查打印机" });
+  fireEvent.click(within(dialog).getByRole("button", { name: "修复客户端队列" }));
+  const attempted = await within(dialog).findByLabelText("已尝试的恢复操作");
+  expect(within(attempted).getByText("修复客户端队列")).toBeTruthy();
+  expect(within(attempted).getByText("部分完成")).toBeTruthy();
+  expect(within(dialog).getByText(/已尝试的恢复操作并不代表物理打印已恢复/)).toBeTruthy();
 });

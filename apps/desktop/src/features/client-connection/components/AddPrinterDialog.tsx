@@ -68,8 +68,8 @@ export function AddPrinterDialog({
   const { review, result, installed, busy, error } = connections;
   const needsChannel = networkChannel.configured === false;
   const steps = needsChannel
-    ? (["Server", "Identity", "Printer", "Network Channel"] as const)
-    : (["Server", "Identity", "Printer"] as const);
+    ? (["服务器", "身份", "打印机", "网络通道"] as const)
+    : (["服务器", "身份", "打印机"] as const);
 
   const currentStepIndex =
     step === "servers" ? 0 : step === "verify" ? 1 : step === "printers" ? 2 : 3;
@@ -178,27 +178,27 @@ export function AddPrinterDialog({
     >
       <DialogHeader className="printer-wizard-header">
         <DialogTitle id="add-printer-title">
-          {step === "servers" && "Find a server"}
-          {step === "verify" && "Check the server identity"}
-          {step === "printers" && "Choose a printer"}
-          {step === "channel" && "Set the Network Channel"}
-          {step === "success" && "Printer installed"}
+          {step === "servers" && "查找服务器"}
+          {step === "verify" && "检查服务器身份"}
+          {step === "printers" && "选择打印机"}
+          {step === "channel" && "设置网络通道"}
+          {step === "success" && "打印机已安装"}
         </DialogTitle>
         <DialogDescription id="add-printer-description">
           {step === "servers" &&
-            "Choose a nearby ShaPrint server or enter its address. Printers stay hidden until you approve its fingerprint."}
+            "选择一个附近的 ShaPrint 服务器，或输入其地址。在你批准其指纹前，打印机保持隐藏。"}
           {step === "verify" &&
-            "Compare this fingerprint with the server owner before approving it. Approval lets ShaPrint list the shared printers."}
+            "批准前，请将该指纹与服务器所有者核对。批准后，ShaPrint 才能列出共享打印机。"}
           {step === "printers" &&
-            `Choose a printer shared by ${review?.address ?? "this server"}.`}
+            `选择 ${review?.address ?? "该服务器"} 共享的打印机。`}
           {step === "channel" &&
-            "This server requires a Network Channel to authorize print jobs. Use the same value configured on the server."}
+            "该服务器需要一个网络通道来授权打印任务。请使用服务器上配置的相同值。"}
           {step === "success" &&
-            "The Windows printer queue is installed. Choose it from any Windows print dialog."}
+            "Windows 打印机队列已安装。你可以在任何 Windows 打印对话框中选择它。"}
         </DialogDescription>
       </DialogHeader>
 
-      <ol className="wizard-progress" aria-label="Printer setup steps">
+      <ol className="wizard-progress" aria-label="打印机设置步骤">
         {steps.map((label, index) => {
           const complete = step === "success" || index < currentStepIndex;
           const current = step !== "success" && index === currentStepIndex;
@@ -237,17 +237,17 @@ export function AddPrinterDialog({
             <div className="wizard-section-heading">
               <span className="wizard-section-title">
                 <Radio size={15} aria-hidden="true" />
-                Nearby servers
+                附近服务器
               </span>
               <span className="wizard-server-count" role="status">
-                {nearby.servers.length} {nearby.servers.length === 1 ? "server" : "servers"} found
+                发现 {nearby.servers.length} 台服务器
               </span>
             </div>
 
             {nearby.servers.length === 0 ? (
               <div className="connection-empty wizard-empty" role="status">
-                <strong>No servers found on this network.</strong>
-                <p>Enter a server address below. Discovery does not cross subnets.</p>
+                <strong>本网络上未发现服务器。</strong>
+                <p>请在下方输入服务器地址。发现功能不跨子网。</p>
               </div>
             ) : (
               <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
@@ -268,8 +268,8 @@ export function AddPrinterDialog({
                         </div>
                         <div className="text-[11px] text-muted-foreground mt-1">
                           {server.printers.length > 0
-                            ? `Advertised (unverified): ${server.printers.join(", ")}`
-                            : "Shares 0 printers"}
+                            ? `广播（未验证）：${server.printers.join(", ")}`
+                            : "共享 0 台打印机"}
                         </div>
                       </div>
                       <Button
@@ -278,8 +278,8 @@ export function AddPrinterDialog({
                         disabled={busy !== null}
                       >
                         {busy === "inspect" && connections.address === server.address
-                          ? "Reviewing…"
-                          : "Review identity"}
+                          ? "正在复核…"
+                          : "复核身份"}
                       </Button>
                     </div>
                   );
@@ -290,7 +290,7 @@ export function AddPrinterDialog({
 
           <div className="manual-server-entry">
             <label htmlFor="wizard-server-address" className="wizard-field-label">
-              Or enter a server address
+              或输入服务器地址
             </label>
             <form onSubmit={(e) => void handleManualSubmit(e)} className="flex gap-2">
               <Input
@@ -302,7 +302,7 @@ export function AddPrinterDialog({
                 disabled={busy !== null}
               />
               <Button type="submit" disabled={busy !== null || !manualAddress.trim()}>
-                {busy === "inspect" ? "Reviewing…" : "Review identity"}
+                {busy === "inspect" ? "正在复核…" : "复核身份"}
               </Button>
             </form>
           </div>
@@ -316,10 +316,9 @@ export function AddPrinterDialog({
             <div className="wizard-trust-warning" role="alert">
               <ShieldAlert size={18} className="shrink-0" aria-hidden="true" />
               <div>
-                <strong>Server identity has changed.</strong>
+                <strong>服务器身份已变更。</strong>
                 <p>
-                  This fingerprint does not match the one you approved before. Verify the change
-                  with the server owner over a trusted channel before reapproving.
+                  此指纹与你之前批准的指纹不匹配。请通过可信渠道与服务器所有者核实变更后再重新批准。
                 </p>
               </div>
             </div>
@@ -327,10 +326,9 @@ export function AddPrinterDialog({
             <div className="wizard-trust-note" role="status">
               <ShieldCheck size={18} className="shrink-0 text-primary" aria-hidden="true" />
               <div>
-                <strong>New server</strong>
+                <strong>新服务器</strong>
                 <p>
-                  Compare this fingerprint with the code shown on the server computer. Printers
-                  remain hidden until you approve the match.
+                  将该指纹与服务器电脑上显示的代码核对。在批准匹配前，打印机保持隐藏。
                 </p>
               </div>
             </div>
@@ -338,12 +336,12 @@ export function AddPrinterDialog({
 
           <div className="wizard-fingerprint">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Server address</span>
+              <span>服务器地址</span>
               <span className="font-mono font-semibold text-foreground">{review.address}</span>
             </div>
 
             <div>
-              <span className="wizard-field-label block mb-1">Server fingerprint (SHA-256)</span>
+              <span className="wizard-field-label block mb-1">服务器指纹（SHA-256）</span>
               <div className="wizard-fingerprint-value">
                 <span>{chunkFingerprint(review.current_fingerprint)}</span>
                 <Button
@@ -354,7 +352,7 @@ export function AddPrinterDialog({
                 >
                   {copyStatus ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
                   <span className="text-[11px] ml-1" aria-live="polite">
-                    {copyStatus ? "Copied" : "Copy"}
+                    {copyStatus ? "已复制" : "复制"}
                   </span>
                 </Button>
               </div>
@@ -369,7 +367,7 @@ export function AddPrinterDialog({
               onClick={() => setStep("servers")}
               disabled={busy !== null}
             >
-              Back
+              上一步
             </Button>
             <Button
               type="button"
@@ -378,10 +376,10 @@ export function AddPrinterDialog({
               disabled={busy !== null}
             >
               {busy === "approve"
-                ? "Saving approval…"
+                ? "正在保存授权…"
                 : review.previous_fingerprint
-                  ? "Reapprove fingerprint"
-                  : "Approve fingerprint"}
+                  ? "重新批准指纹"
+                  : "批准指纹"}
             </Button>
           </div>
         </div>
@@ -391,22 +389,22 @@ export function AddPrinterDialog({
       {step === "printers" && (
         <div className="space-y-4 my-2">
           <div className="wizard-approved-server" role="status">
-            <span>Approved server: {connections.address}</span>
-            <Badge variant="success">Fingerprint approved</Badge>
+            <span>已批准服务器：{connections.address}</span>
+            <Badge variant="success">指纹已批准</Badge>
           </div>
 
           <div className="space-y-2">
-            <h3 className="wizard-section-title">Shared printers</h3>
+            <h3 className="wizard-section-title">共享打印机</h3>
 
             {busy === "printers" ? (
               <p className="wizard-loading" role="status">
                 <RefreshCw className="size-4 text-primary" aria-hidden="true" />
-                Loading shared printers…
+                正在加载共享打印机…
               </p>
             ) : !result || result.printers.length === 0 ? (
               <div className="connection-empty" role="status">
-                <strong>No printers shared yet.</strong>
-                <p>Ask the server owner to select local printer queues on their Share page.</p>
+                <strong>还没有共享的打印机。</strong>
+                <p>请服务器所有者在他们的“共享打印机”页面选择本地打印机队列。</p>
               </div>
             ) : (
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -420,7 +418,7 @@ export function AddPrinterDialog({
                       <div>
                         <span className="font-semibold text-sm">{name}</span>
                         <p className="text-[11px] text-muted-foreground">
-                          Installs as Windows queue via local proxy
+                          通过本地代理安装为 Windows 队列
                         </p>
                       </div>
                     </div>
@@ -429,7 +427,7 @@ export function AddPrinterDialog({
                       disabled={busy !== null}
                       onClick={() => void handleInstallPrinter(name)}
                     >
-                      {busy === "install" && selectedPrinter === name ? "Installing…" : "Install"}
+                      {busy === "install" && selectedPrinter === name ? "正在安装…" : "安装"}
                     </Button>
                   </div>
                 ))}
@@ -445,23 +443,22 @@ export function AddPrinterDialog({
           <div className="wizard-channel-note">
             <KeyRound size={18} className="shrink-0 text-warning" aria-hidden="true" />
             <div>
-              <strong>Network Channel required</strong>
+              <strong>需要网络通道</strong>
               <p>
-                Enter the same value configured on the server. It authorizes print jobs between
-                these computers.
+                请输入服务器上配置的相同值。它用于在这些电脑之间授权打印任务。
               </p>
             </div>
           </div>
 
           <div className="space-y-1.5">
             <label htmlFor="wizard-network-channel" className="wizard-field-label">
-              Network Channel
+              网络通道
             </label>
             <PasswordInput
               id="wizard-network-channel"
-              visibilityLabel="Network Channel"
+              visibilityLabel="网络通道"
               autoComplete="new-password"
-              placeholder="Enter the shared Network Channel"
+              placeholder="输入共享的网络通道"
               value={channelInput}
               onChange={(e) => setChannelInput(e.target.value)}
               required
@@ -477,14 +474,14 @@ export function AddPrinterDialog({
               onClick={() => setStep("printers")}
               disabled={networkChannel.saving || busy !== null}
             >
-              Back
+              上一步
             </Button>
             <Button
               type="submit"
               size="sm"
               disabled={networkChannel.saving || !channelInput.trim() || busy !== null}
             >
-              {networkChannel.saving ? "Saving…" : "Save Network Channel and install"}
+              {networkChannel.saving ? "正在保存…" : "保存网络通道并安装"}
             </Button>
           </div>
         </form>
@@ -497,17 +494,17 @@ export function AddPrinterDialog({
             <CheckCircle2 size={22} aria-hidden="true" />
             <div>
               <h3>{installed.queue_name}</h3>
-              <p>Installed. Choose this printer from any Windows print dialog.</p>
+              <p>已安装。你可以在任何 Windows 打印对话框中选择此打印机。</p>
             </div>
           </div>
 
-          <dl className="wizard-install-details" aria-label="Installed printer details">
+          <dl className="wizard-install-details" aria-label="已安装打印机详情">
             <div>
-              <dt>Shared printer</dt>
+              <dt>共享打印机</dt>
               <dd>{installed.printer_name}</dd>
             </div>
             <div>
-              <dt>Server</dt>
+              <dt>服务器</dt>
               <dd>{installed.server_address}</dd>
             </div>
           </dl>
@@ -520,10 +517,10 @@ export function AddPrinterDialog({
                 setStep("printers");
               }}
             >
-              Install another
+              继续安装
             </Button>
             <Button size="sm" onClick={() => onOpenChange(false)}>
-              Done
+              完成
             </Button>
           </div>
         </div>

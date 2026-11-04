@@ -8,14 +8,14 @@ import type { PrintFailuresController } from "../hooks/usePrintFailures";
 
 /** Where a job stopped, in the user's terms. */
 const PATH_LABELS: Record<PrintFailurePath, string> = {
-  "client-forwarding": "Sending the job to the server",
-  "server-submission": "Submitting the job to the printer queue",
+  "client-forwarding": "将任务发送到服务器",
+  "server-submission": "将任务提交到打印机队列",
 };
 
 function observedAt(milliseconds: number): { iso: string; text: string } {
   const date = new Date(milliseconds);
   if (Number.isNaN(date.getTime())) {
-    return { iso: "", text: "time unknown" };
+    return { iso: "", text: "时间未知" };
   }
   return { iso: date.toISOString(), text: date.toLocaleTimeString() };
 }
@@ -56,7 +56,7 @@ export function PrintFailuresPanel({ failures, clientQueues, onTroubleshoot }: P
             id="print-failures-heading"
             className={hasProblem ? "text-sm font-semibold text-destructive" : "text-xs font-medium text-muted-foreground"}
           >
-            Print problems
+            打印问题
           </h2>
         </div>
 
@@ -69,7 +69,7 @@ export function PrintFailuresPanel({ failures, clientQueues, onTroubleshoot }: P
             className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground"
           >
             <X size={13} className="mr-1" />
-            Dismiss
+            忽略
           </Button>
         ) : null}
       </div>
@@ -100,7 +100,7 @@ export function PrintFailuresPanel({ failures, clientQueues, onTroubleshoot }: P
 
           <div className="failure-recovery rounded-md bg-muted/60 p-2.5 text-xs text-foreground space-y-0.5 border border-border/60">
             <strong className="text-primary font-semibold block text-xs">
-              Try this
+              请尝试
             </strong>
             <p className="text-xs leading-relaxed">{failure.recovery}</p>
           </div>
@@ -114,20 +114,20 @@ export function PrintFailuresPanel({ failures, clientQueues, onTroubleshoot }: P
                 onClick={() => onTroubleshoot?.(identifiedTarget)}
                 className="text-xs h-7"
               >
-                Troubleshoot printer
+                故障排查打印机
               </Button>
             </div>
           ) : null}
 
           <p className="failure-when text-[11px] text-muted-foreground flex items-center gap-1 pt-0.5">
             <Clock size={11} />
-            <span>Reported </span>
-            <time dateTime={observed?.iso ?? ""}>{observed?.text ?? "time unknown"}</time>
+            <span>报告于 </span>
+            <time dateTime={observed?.iso ?? ""}>{observed?.text ?? "时间未知"}</time>
           </p>
         </article>
       ) : error ? null : (
         <p className="hint text-xs text-muted-foreground" role="status">
-          No recent print failures.
+          近期没有打印失败。
         </p>
       )}
     </Card>

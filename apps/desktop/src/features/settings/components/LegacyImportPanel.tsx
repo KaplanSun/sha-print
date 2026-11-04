@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 
 /** Short label for what happened to the previous app's Network Channel. */
 const CHANNEL_LABELS: Record<LegacyChannelOutcome, string> = {
-  importable: "Ready to import",
-  imported: "Imported",
-  "kept-existing": "Left alone",
-  absent: "Nothing to import",
-  unreadable: "Could not be opened",
+  importable: "可导入",
+  imported: "已导入",
+  "kept-existing": "保留原样",
+  absent: "无内容可导入",
+  unreadable: "无法打开",
 };
 
 export interface LegacyImportPanelProps {
@@ -33,10 +33,10 @@ export function LegacyImportPanel({ legacy }: LegacyImportPanelProps) {
           </div>
           <div>
             <h2 id="legacy-import-heading" className="text-base font-semibold leading-none">
-              Previous ShaPrint app
+              以前的 ShaPrint 应用
             </h2>
             <p className="hint text-xs mt-1 text-muted-foreground">
-              What carried over from the earlier ShaPrint app.
+              从旧版 ShaPrint 应用迁移过来的内容。
             </p>
           </div>
         </div>
@@ -53,10 +53,10 @@ export function LegacyImportPanel({ legacy }: LegacyImportPanelProps) {
             {busy ? (
               <>
                 <RefreshCw size={13} className="animate-spin mr-1" />
-                <span>Importing…</span>
+                <span>正在导入…</span>
               </>
             ) : (
-              "Import again"
+              "重新导入"
             )}
           </Button>
         ) : null}
@@ -71,13 +71,13 @@ export function LegacyImportPanel({ legacy }: LegacyImportPanelProps) {
 
       {report === null ? (
         <p className="hint text-xs text-muted-foreground" role="status">
-          Checking for settings from the previous ShaPrint app…
+          正在检查旧版 ShaPrint 应用的设置…
         </p>
       ) : null}
 
       {report && !report.found ? (
         <p className="hint text-xs text-muted-foreground" role="status">
-          No settings from a previous ShaPrint app were found on this computer.
+          在这台电脑上未找到旧版 ShaPrint 应用的设置。
         </p>
       ) : null}
 
@@ -89,7 +89,7 @@ export function LegacyImportPanel({ legacy }: LegacyImportPanelProps) {
           >
             <div className="flex items-center justify-between">
               <span className="channel-outcome-label font-semibold text-emerald-700 dark:text-emerald-400">
-                Network Channel: {CHANNEL_LABELS[report.channel] ?? report.channel}
+                网络通道：{CHANNEL_LABELS[report.channel] ?? report.channel}
               </span>
             </div>
             <p className="channel-outcome-note text-muted-foreground">{report.channel_note}</p>
@@ -97,15 +97,15 @@ export function LegacyImportPanel({ legacy }: LegacyImportPanelProps) {
 
           {report.queues_need_reselection ? (
             <p className="reselect rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning-foreground" role="status" data-testid="reselect-queues">
-              <strong>Select your printers again.</strong> Choose local queues on Share, and install
-              client queues again from Connect. The previous app&rsquo;s queue setup is not activated.
+              <strong>请重新选择你的打印机。</strong>请在“共享打印机”页选择本地队列，
+              并在“连接”页重新安装客户端队列。旧版应用的队列设置不会被启用。
             </p>
           ) : null}
 
           {report.settings.length > 0 ? (
             <details className="left-behind rounded-lg border border-border bg-card p-3 text-xs">
               <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground">
-                What this app did not take ({report.settings.length})
+                此应用未迁移的内容（{report.settings.length}）
               </summary>
               <ul className="left-behind-list mt-2 space-y-2 pl-2 border-l border-border">
                 {report.settings.map((setting) => (

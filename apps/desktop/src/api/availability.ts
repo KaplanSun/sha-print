@@ -23,17 +23,17 @@ interface PrintPath {
 
 const PRINT_PATHS: Partial<Record<ServiceId, PrintPath>> = {
   "client-proxy": {
-    moving: "Printing from queues installed on this computer is unavailable while the client proxy changes state.",
+    moving: "客户端代理状态变化期间，无法从此电脑上已安装的队列打印。",
     failed:
-      "Printing from queues installed on this computer is unavailable. The client proxy failed to start or stopped unexpectedly; use Start to try again.",
-    stopped: "Start the client proxy to print from queues installed on this computer.",
+      "无法从此电脑上已安装的队列打印。客户端代理启动失败或意外停止；请使用“启动”重试。",
+    stopped: "启动客户端代理，即可从此电脑上已安装的队列打印。",
   },
   "server-sharing": {
-    moving: "Other ShaPrint users cannot print to your queues while server sharing changes state.",
+    moving: "服务器共享状态变化期间，其他 ShaPrint 用户无法打印到你的队列。",
     // Sharing is off until the user starts it, so a stopped sharing service is not a problem to
     // report; only a failure is.
     failed:
-      "Other ShaPrint users cannot print to your selected queues. Server sharing failed to start or stopped unexpectedly; use Start to try again.",
+      "其他 ShaPrint 用户无法打印到你所选的队列。服务器共享启动失败或意外停止；请使用“启动”重试。",
   },
 };
 

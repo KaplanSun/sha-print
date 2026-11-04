@@ -10,7 +10,7 @@ function service(id: ServiceStatus["id"], state: ServiceState): ServiceStatus {
 describe("print availability", () => {
   it("says what to start when the always-on print path is stopped", () => {
     expect(printRecovery(service("client-proxy", "stopped"))).toBe(
-      "Start the client proxy to print from queues installed on this computer.",
+      "启动客户端代理，即可从此电脑上已安装的队列打印。",
     );
   });
 
@@ -26,15 +26,15 @@ describe("print availability", () => {
   });
 
   it("reports a print path that failed as retryable", () => {
-    expect(printRecovery(service("client-proxy", "failed"))).toContain("use Start to try again");
+    expect(printRecovery(service("client-proxy", "failed"))).toContain("请使用“启动”重试");
     expect(printRecovery(service("server-sharing", "failed"))).toContain(
-      "Other ShaPrint users cannot print",
+      "其他 ShaPrint 用户无法打印",
     );
   });
 
   it("calls out a print path that is still moving through its lifecycle", () => {
-    expect(printRecovery(service("client-proxy", "starting"))).toContain("unavailable");
-    expect(printRecovery(service("server-sharing", "stopping"))).toContain("cannot print");
+    expect(printRecovery(service("client-proxy", "starting"))).toContain("无法从此电脑上已安装的队列打印");
+    expect(printRecovery(service("server-sharing", "stopping"))).toContain("无法打印到你的队列");
   });
 
   it("ignores services that no print depends on", () => {

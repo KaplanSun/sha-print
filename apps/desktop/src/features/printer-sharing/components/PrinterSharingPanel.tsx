@@ -81,13 +81,13 @@ export function PrinterSharingPanel({
 
     try {
       if (!navigator.clipboard?.writeText) {
-        setCopyMessage("Clipboard access is unavailable. Select the fingerprint to copy it.");
+        setCopyMessage("剪贴板不可用。请选中指纹以复制它。");
         return;
       }
       await navigator.clipboard.writeText(identity.fingerprint);
-      setCopyMessage("Fingerprint copied.");
+      setCopyMessage("指纹已复制。");
     } catch {
-      setCopyMessage("Could not copy the fingerprint. Select it to copy it manually.");
+      setCopyMessage("无法复制指纹。请选中它以手动复制。");
     }
   }
 
@@ -118,7 +118,7 @@ export function PrinterSharingPanel({
       setShowChannelPrompt(false);
       await runtime.start("server-sharing");
     } else {
-      setChannelError("Could not save Network Channel. Check error details below.");
+      setChannelError("无法保存网络通道。请查看下方错误详情。");
     }
   }
 
@@ -134,11 +134,11 @@ export function PrinterSharingPanel({
     const widthMm = parseMm(customWidthMm);
     const heightMm = parseMm(customHeightMm);
     if (!label) {
-      setCustomFormError("Enter a name for this paper size.");
+      setCustomFormError("请输入此纸张尺寸的名称。");
       return;
     }
     if (widthMm === null || heightMm === null) {
-      setCustomFormError("Width and height must be positive numbers in millimetres.");
+      setCustomFormError("宽度和高度必须是正数，单位为毫米。");
       return;
     }
     setCustomFormError(null);
@@ -152,7 +152,7 @@ export function PrinterSharingPanel({
       setCustomWidthMm("");
       setCustomHeightMm("");
     } catch {
-      setCustomFormError("Could not add the custom paper size. See the error banner for details.");
+      setCustomFormError("无法添加自定义纸张尺寸。详情请查看错误提示。");
     }
   }
 
@@ -161,7 +161,7 @@ export function PrinterSharingPanel({
     try {
       await removeCustomMedia(label);
     } catch {
-      setCustomFormError("Could not remove the custom paper size. See the error banner for details.");
+      setCustomFormError("无法移除自定义纸张尺寸。详情请查看错误提示。");
     }
   }
 
@@ -178,10 +178,10 @@ export function PrinterSharingPanel({
           </div>
           <div>
             <h2 id="sharing-heading" className="text-base font-semibold leading-none">
-              Local printers
+              本地打印机
             </h2>
             <p className="hint text-xs mt-1 text-muted-foreground">
-              Choose the queues clients are allowed to print to.
+              选择允许客户端打印的队列。
             </p>
           </div>
         </div>
@@ -194,11 +194,11 @@ export function PrinterSharingPanel({
                 size="sm"
                 onClick={() => void handleStopSharingClick()}
                 disabled={isTransitioning}
-                aria-label="Stop sharing"
+                aria-label="停止共享"
                 className="text-xs h-8 text-destructive hover:text-destructive"
               >
                 <Square size={13} className="mr-1 fill-destructive" aria-hidden="true" />
-                Stop sharing
+                停止共享
               </Button>
             ) : (
               <Button
@@ -207,11 +207,11 @@ export function PrinterSharingPanel({
                 size="sm"
                 onClick={() => void handleStartSharingClick()}
                 disabled={isTransitioning || sharedCount === 0}
-                aria-label="Start sharing"
+                aria-label="开始共享"
                 className="text-xs h-8"
               >
                 <Play size={13} className="mr-1 fill-current" aria-hidden="true" />
-                Start sharing
+                开始共享
               </Button>
             )
           ) : null}
@@ -223,22 +223,22 @@ export function PrinterSharingPanel({
             onClick={() => void refresh()}
             disabled={changing}
             className="text-xs h-8"
-            aria-label="Refresh local printers"
+            aria-label="刷新本地打印机"
           >
             <RefreshCw size={14} className={changing ? "animate-spin mr-1.5" : "mr-1.5"} aria-hidden="true" />
-            Refresh
+            刷新
           </Button>
         </div>
       </div>
 
       {showChannelPrompt ? (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3" role="region" aria-label="Set Network Channel before sharing">
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3" role="region" aria-label="共享前设置网络通道">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <KeyRound size={16} className="text-primary" />
-            <span>Set Network Channel before sharing</span>
+            <span>共享前设置网络通道</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            A shared Network Channel is required so only authorised clients can submit print jobs.
+            需要共享的网络通道，以便只有授权的客户端可以提交打印任务。
           </p>
           {channelError ? (
             <p className="text-xs text-destructive font-medium">{channelError}</p>
@@ -246,10 +246,10 @@ export function PrinterSharingPanel({
           <form onSubmit={(e) => void handleSaveChannelAndStartSharing(e)} className="space-y-3">
             <Input
               type="password"
-              placeholder="Enter shared secret"
+              placeholder="输入共享密钥"
               value={channelInput}
               onChange={(e) => setChannelInput(e.target.value)}
-              aria-label="Network Channel secret"
+              aria-label="网络通道密钥"
               className="text-xs h-8"
               autoFocus
             />
@@ -261,7 +261,7 @@ export function PrinterSharingPanel({
                 onClick={handleCancelChannelPrompt}
                 className="text-xs h-8"
               >
-                Cancel
+                取消
               </Button>
               <Button
                 type="submit"
@@ -270,7 +270,7 @@ export function PrinterSharingPanel({
                 disabled={!channelInput.trim()}
                 className="text-xs h-8"
               >
-                Save & Start sharing
+                保存并开始共享
               </Button>
             </div>
           </form>
@@ -282,7 +282,7 @@ export function PrinterSharingPanel({
           <span className="banner-code">{error.code}</span>
           <span className="banner-message">{error.message}</span>
           <Button type="button" variant="ghost" size="sm" onClick={dismissError}>
-            Dismiss
+            忽略
           </Button>
         </p>
       ) : null}
@@ -290,7 +290,7 @@ export function PrinterSharingPanel({
       <div className="sharing-queue-area">
         {printers === null ? (
           <p className="hint text-xs text-muted-foreground" role="status">
-            Reading the local printer queues…
+            正在读取本地打印机队列…
           </p>
         ) : null}
 
@@ -298,8 +298,8 @@ export function PrinterSharingPanel({
           <div className="empty-state rounded-lg border border-dashed border-border/80 p-6 text-center text-xs">
             <span className="empty-state-mark mx-auto mb-2 flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden="true">—</span>
             <div>
-              <strong className="text-sm font-semibold text-foreground">No local printers found</strong>
-              <p className="hint mt-1 text-muted-foreground">Install a printer in Windows, then refresh this list.</p>
+              <strong className="text-sm font-semibold text-foreground">未找到本地打印机</strong>
+              <p className="hint mt-1 text-muted-foreground">请在 Windows 中安装打印机，然后刷新此列表。</p>
             </div>
           </div>
         ) : null}
@@ -311,8 +311,8 @@ export function PrinterSharingPanel({
                 <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
                   id={searchId}
-                  aria-label="Search printers"
-                  placeholder="Search printers"
+                  aria-label="搜索打印机"
+                  placeholder="搜索打印机"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8 text-xs h-8"
@@ -321,9 +321,9 @@ export function PrinterSharingPanel({
             )}
 
             <div className="printer-list-heading flex items-center justify-between text-xs font-semibold text-muted-foreground border-b border-border/60 pb-1.5 px-1">
-              <span>Printer queue</span>
+              <span>打印机队列</span>
               <span className="font-mono text-[11px] bg-muted px-2 py-0.5 rounded-full text-foreground">
-                {sharedCount} of {printers.length} shared
+                {sharedCount} / {printers.length} 已共享
               </span>
             </div>
 
@@ -341,7 +341,7 @@ export function PrinterSharingPanel({
                       <div className="printer-choice flex items-center gap-3 select-none">
                         <Checkbox
                           id={printerId}
-                          aria-label={`Share ${printer.name}`}
+                          aria-label={`共享 ${printer.name}`}
                           checked={printer.shared}
                           disabled={changing}
                           onCheckedChange={() => void toggle(printer.name)}
@@ -349,7 +349,7 @@ export function PrinterSharingPanel({
                         <span className="printer-name text-sm font-medium text-foreground">{printer.name}</span>
                       </div>
                       <Badge variant={printer.shared ? "success" : "muted"} className="text-xs">
-                        {printer.shared ? "Shared" : "Not shared"}
+                        {printer.shared ? "已共享" : "未共享"}
                       </Badge>
                     </li>
                   );
@@ -357,16 +357,16 @@ export function PrinterSharingPanel({
               </ul>
             ) : (
               <p className="hint printer-filter-empty" role="status">
-                No printers match “{searchQuery}”.
+                没有与“{searchQuery}”匹配的打印机。
               </p>
             )}
 
             <p className="sharing-count text-xs text-muted-foreground mt-1 px-1">
               {sharedCount === 0
-                ? "Select at least one queue, then start server sharing."
+                ? "请至少选择一个队列，然后开始服务器共享。"
                 : isSharingRunning
-                  ? "Selected queues are actively being shared with clients."
-                  : "Selected queues will be shared when you click Start sharing."}
+                  ? "已选队列正在与客户端共享。"
+                  : "点击“开始共享”后，已选队列将被共享。"}
             </p>
           </div>
         ) : null}
@@ -375,19 +375,19 @@ export function PrinterSharingPanel({
       <div className="custom-media rounded-lg border border-border bg-card p-4 space-y-3 mt-2">
         <div className="flex items-center gap-2">
           <Ruler size={16} className="text-primary" aria-hidden="true" />
-          <h3 className="text-sm font-semibold text-foreground">Custom paper sizes</h3>
+          <h3 className="text-sm font-semibold text-foreground">自定义纸张尺寸</h3>
         </div>
         <p className="hint text-xs text-muted-foreground">
-          Add paper sizes outside the built-in catalog. Clients can then select them when printing.
+          添加内置目录之外的纸张尺寸。客户端打印时即可选择它们。
         </p>
 
         {customMedia === null ? (
           <p className="hint text-xs text-muted-foreground" role="status">
-            Reading custom paper sizes…
+            正在读取自定义纸张尺寸…
           </p>
         ) : customMedia.length === 0 ? (
           <p className="hint text-xs text-muted-foreground">
-            No custom paper sizes configured.
+            未配置自定义纸张尺寸。
           </p>
         ) : (
           <ul className="custom-media-list divide-y divide-border/60">
@@ -405,7 +405,7 @@ export function PrinterSharingPanel({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  aria-label={`Remove ${media.label}`}
+                  aria-label={`移除 ${media.label}`}
                   disabled={customMediaBusy}
                   onClick={() => void handleRemoveCustomMedia(media.label)}
                   className="text-xs h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
@@ -422,10 +422,10 @@ export function PrinterSharingPanel({
           className="custom-media-form grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end"
         >
           <Input
-            placeholder="Label (e.g. Receipt 80x120)"
+            placeholder="名称（例如 收据 80x120）"
             value={customLabel}
             onChange={(e) => setCustomLabel(e.target.value)}
-            aria-label="Custom paper size label"
+            aria-label="自定义纸张尺寸名称"
             className="text-xs h-8"
             maxLength={80}
           />
@@ -433,20 +433,20 @@ export function PrinterSharingPanel({
             type="number"
             step="0.1"
             min="50"
-            placeholder="Width mm"
+            placeholder="宽度（毫米）"
             value={customWidthMm}
             onChange={(e) => setCustomWidthMm(e.target.value)}
-            aria-label="Custom paper size width in millimetres"
+            aria-label="自定义纸张尺寸宽度（毫米）"
             className="text-xs h-8 w-28"
           />
           <Input
             type="number"
             step="0.1"
             min="50"
-            placeholder="Height mm"
+            placeholder="高度（毫米）"
             value={customHeightMm}
             onChange={(e) => setCustomHeightMm(e.target.value)}
-            aria-label="Custom paper size height in millimetres"
+            aria-label="自定义纸张尺寸高度（毫米）"
             className="text-xs h-8 w-28"
           />
           <Button
@@ -457,7 +457,7 @@ export function PrinterSharingPanel({
             className="text-xs h-8"
           >
             <Plus size={13} className="mr-1" aria-hidden="true" />
-            Add
+            添加
           </Button>
         </form>
         {customFormError ? (
@@ -473,14 +473,14 @@ export function PrinterSharingPanel({
             <div>
               <div className="flex items-center gap-2">
                 <ShieldCheck size={16} className="text-primary" />
-                <h3 className="text-sm font-semibold text-foreground">Server identity</h3>
+                <h3 className="text-sm font-semibold text-foreground">服务器身份</h3>
               </div>
               <p className="hint text-xs text-muted-foreground mt-1">
-                Clients verify this fingerprint before they can see shared printers.
+                客户端在查看共享打印机前会核验此指纹。
               </p>
             </div>
             <Badge variant="info" className="text-xs font-mono">
-              Port {identity.port}
+              端口 {identity.port}
             </Badge>
           </div>
 
@@ -499,7 +499,7 @@ export function PrinterSharingPanel({
               className="shrink-0 text-xs h-8 gap-1.5 self-start sm:self-center"
             >
               <Copy size={13} aria-hidden="true" />
-              Copy
+              复制
             </Button>
           </div>
 

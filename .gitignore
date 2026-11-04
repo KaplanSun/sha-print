@@ -37,3 +37,4 @@ packaging/linux/keys/*.sec.key
 *.keystore
 apps/android/key.properties
 
+package-lock.json

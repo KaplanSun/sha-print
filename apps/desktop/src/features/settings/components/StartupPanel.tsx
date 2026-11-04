@@ -30,12 +30,12 @@ export function StartupPanel({ startup, controlMode = "local" }: StartupPanelPro
           </div>
           <div>
             <h2 id="startup-heading" className="text-base font-semibold leading-none">
-              Startup
+              启动
             </h2>
             <p className="hint text-xs mt-1 text-muted-foreground">
               {isMachine
-                ? "The ShaPrint system service starts with this machine."
-                : "Start ShaPrint when you sign in to Windows."}
+                ? "ShaPrint 系统服务随本机启动。"
+                : "在你登录 Windows 时启动 ShaPrint。"}
             </p>
           </div>
         </div>
@@ -50,15 +50,15 @@ export function StartupPanel({ startup, controlMode = "local" }: StartupPanelPro
 
       {status === null ? (
         <p className="hint text-xs text-muted-foreground" role="status">
-          Checking the login setting…
+          正在检查登录设置…
         </p>
       ) : null}
 
       {status && !status.supported ? (
         <p className="hint text-xs text-muted-foreground">
           {isMachine
-            ? "The ShaPrint system service owns startup on this machine, so this window registers no login entry. Closing the window only closes the GUI — the Client proxy and Server keep printing."
-            : "Starting ShaPrint at login is available on Windows. Closing the window ends the app on this platform."}
+            ? "ShaPrint 系统服务拥有本机的启动项，因此此窗口不会注册登录项。关闭窗口仅关闭图形界面——客户端代理与服务器会继续打印。"
+            : "在 Windows 上可用时，可在登录时启动 ShaPrint。在此平台上关闭窗口即结束应用。"}
         </p>
       ) : null}
 
@@ -74,28 +74,27 @@ export function StartupPanel({ startup, controlMode = "local" }: StartupPanelPro
             />
             <div className="flex flex-col">
               <span className="text-sm font-medium text-foreground">
-                Start ShaPrint when I sign in to Windows
+                我登录 Windows 时启动 ShaPrint
               </span>
               <span className="text-xs text-muted-foreground mt-0.5">
-                Starts ShaPrint in the notification area so installed printer queues can keep using the client proxy.
+                在通知区域启动 ShaPrint，使已安装的打印机队列可以继续使用客户端代理。
               </span>
             </div>
           </label>
 
           {status.command ? (
             <details className="startup-details">
-              <summary>View Windows startup entry</summary>
+              <summary>查看 Windows 启动项</summary>
               <code className="startup-command">{status.command}</code>
             </details>
           ) : (
             <p className="hint text-xs text-muted-foreground">
-              ShaPrint cannot locate its program, so it cannot register itself to start at login.
+              ShaPrint 无法定位其程序，因此无法注册其在登录时启动。
             </p>
           )}
 
           <p className="hint text-xs text-muted-foreground">
-            Closing the window keeps ShaPrint running in the notification area so your installed
-            queues still print. Use <strong>Quit ShaPrint</strong> in that menu to stop it.
+            关闭窗口会使 ShaPrint 在通知区域保持运行，让你已安装的队列仍能打印。请使用该菜单中的 <strong>退出 ShaPrint</strong> 来停止它。
           </p>
         </div>
       ) : null}

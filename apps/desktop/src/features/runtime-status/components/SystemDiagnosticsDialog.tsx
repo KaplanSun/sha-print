@@ -26,25 +26,25 @@ import type { RuntimeStatusController } from "../hooks/useRuntimeStatus";
 
 const SERVICE_LABELS: Record<ServiceId, { title: string; description: string }> = {
   "client-proxy": {
-    title: "Client proxy",
-    description: "Forwards print jobs from your installed queues to a trusted server.",
+    title: "客户端代理",
+    description: "将你已安装队列的打印任务转发到受信任的服务器。",
   },
   "server-sharing": {
-    title: "Server sharing",
-    description: "Shares the local printer queues you selected with other ShaPrint users.",
+    title: "服务器共享",
+    description: "将你选择的本地打印机队列共享给其他 ShaPrint 用户。",
   },
   "server-discovery": {
-    title: "Server discovery",
-    description: "Finds ShaPrint servers on this network so you can review and connect to them.",
+    title: "服务器发现",
+    description: "在此网络上查找 ShaPrint 服务器，以便你复核并连接。",
   },
 };
 
 const STATE_LABELS: Record<ServiceState, string> = {
-  stopped: "Stopped",
-  starting: "Starting…",
-  running: "Running",
-  stopping: "Stopping…",
-  failed: "Failed",
+  stopped: "已停止",
+  starting: "启动中…",
+  running: "运行中",
+  stopping: "停止中…",
+  failed: "失败",
 };
 
 const STATE_VARIANTS: Record<ServiceState, NonNullable<BadgeProps["variant"]>> = {
@@ -65,28 +65,28 @@ const CONTROLS: Record<ServiceState, { canStart: boolean; canStop: boolean }> = 
 
 const CHECK_LABELS: Record<string, { title: string; description: string }> = {
   daemon: {
-    title: "Daemon service",
-    description: "Evaluates whether shaprintd is running and responsive.",
+    title: "守护进程服务",
+    description: "评估 shaprintd 是否在运行且有响应。",
   },
   ports: {
-    title: "Network ports",
-    description: "Evaluates whether IPPS Server, Client proxy, and Discovery ports are available or owned by ShaPrint.",
+    title: "网络端口",
+    description: "评估 IPPS 服务器、客户端代理和发现端口是否可用或由 ShaPrint 占用。",
   },
   cups: {
-    title: "CUPS printing system",
-    description: "Evaluates whether the local CUPS print spooler is responsive.",
+    title: "CUPS 打印系统",
+    description: "评估本地 CUPS 打印假脱机是否有响应。",
   },
   trust: {
-    title: "Machine trust store",
-    description: "Evaluates certificate trust storage and configuration.",
+    title: "机器信任存储",
+    description: "评估证书信任存储与配置。",
   },
   credential: {
-    title: "Network Channel credential",
-    description: "Evaluates whether the shared secret Network Channel is configured for authorized printing.",
+    title: "网络通道凭据",
+    description: "评估共享密钥网络通道是否已配置用于授权打印。",
   },
   firewall: {
-    title: "System firewall",
-    description: "Evaluates whether inbound ports 48631/tcp and 48633/udp are permitted in the system firewall.",
+    title: "系统防火墙",
+    description: "评估入站端口 48631/tcp 与 48633/udp 是否在系统防火墙中被允许。",
   },
 };
 
@@ -150,10 +150,9 @@ export function SystemDiagnosticsDialog({
       ariaDescribedBy="diagnostics-description"
     >
       <DialogHeader>
-        <DialogTitle id="diagnostics-title">Print service status</DialogTitle>
+        <DialogTitle id="diagnostics-title">打印服务状态</DialogTitle>
         <DialogDescription id="diagnostics-description">
-          Check the client proxy and printer sharing here. The client proxy keeps installed queues
-          working; server sharing starts only when you turn it on.
+          在此检查客户端代理与打印机共享。客户端代理使已安装队列保持工作；服务器共享仅在你开启后才启动。
         </DialogDescription>
       </DialogHeader>
 
@@ -165,7 +164,7 @@ export function SystemDiagnosticsDialog({
               <span>{error.message}</span>
             </div>
             <Button size="sm" variant="ghost" onClick={dismissError}>
-              Dismiss
+              忽略
             </Button>
           </div>
         ) : null}
@@ -177,18 +176,18 @@ export function SystemDiagnosticsDialog({
               <span>{daemonError.message}</span>
             </div>
             <Button size="sm" variant="ghost" onClick={() => setDaemonError(null)}>
-              Dismiss
+              忽略
             </Button>
           </div>
         ) : null}
 
         {unreachable ? (
           <div className="runtime-unreachable" role="alert">
-            <strong>{isMachine ? "Machine daemon unavailable" : "Runtime unavailable"}</strong>
+            <strong>{isMachine ? "机器守护进程不可用" : "运行时不可用"}</strong>
             <p className="text-xs text-muted-foreground mt-1">
               {isMachine
-                ? "The machine daemon is not responding, so its print services are stopped. Start the system service (sudo systemctl start shaprintd), then choose Refresh All."
-                : "The ShaPrint runtime is not responding. Reopen the desktop app to reconnect."}
+                ? "机器守护进程未响应，因此其打印服务已停止。请启动系统服务（sudo systemctl start shaprintd），然后选择“全部刷新”。"
+                : "ShaPrint 运行时未响应。请重新打开桌面应用以重新连接。"}
             </p>
           </div>
         ) : null}
@@ -196,7 +195,7 @@ export function SystemDiagnosticsDialog({
         {status === null && !unreachable ? (
           <p className="diagnostic-loading" role="status">
             <RefreshCw className="size-4 text-primary" aria-hidden="true" />
-            Checking print services…
+            正在检查打印服务…
           </p>
         ) : null}
 
@@ -235,7 +234,7 @@ export function SystemDiagnosticsDialog({
 
                   {recovery ? (
                     <p className="service-recovery" role="status">
-                      <span className="service-recovery-label">Printing affected</span>
+                      <span className="service-recovery-label">打印受影响</span>
                       {recovery}
                     </p>
                   ) : null}
@@ -249,8 +248,8 @@ export function SystemDiagnosticsDialog({
                       onClick={() => void start(service.id)}
                     >
                       {service.state === "starting" || (isBusy && service.state === "stopped")
-                        ? "Starting…"
-                        : "Start"}
+                        ? "启动中…"
+                        : "启动"}
                     </Button>
                     <Button
                       size="sm"
@@ -260,8 +259,8 @@ export function SystemDiagnosticsDialog({
                       onClick={() => void stop(service.id)}
                     >
                       {service.state === "stopping" || (isBusy && service.state === "running")
-                        ? "Stopping…"
-                        : "Stop"}
+                        ? "停止中…"
+                        : "停止"}
                     </Button>
                   </div>
                 </section>
@@ -276,29 +275,29 @@ export function SystemDiagnosticsDialog({
             aria-labelledby="diagnostic-readiness-title"
           >
             <h4 id="diagnostic-readiness-title" className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
-              System Readiness & Destinations
+              系统就绪状态与目标
             </h4>
             {status.readiness ? (
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Configured readiness:</span>
+                <span className="text-muted-foreground">已配置就绪状态：</span>
                 <span className="font-mono font-medium" data-testid="readiness-status">{status.readiness}</span>
               </div>
             ) : null}
             {status.failure_code ? (
               <div className="flex items-center justify-between text-destructive">
-                <span className="font-medium">Failure code:</span>
+                <span className="font-medium">故障代码：</span>
                 <span className="font-mono font-bold" data-testid="failure-code">{status.failure_code}</span>
               </div>
             ) : null}
             {status.shared_printers && status.shared_printers.length > 0 ? (
               <div>
-                <span className="text-muted-foreground">Shared printers: </span>
+                <span className="text-muted-foreground">共享打印机：</span>
                 <span className="font-medium">{status.shared_printers.join(", ")}</span>
               </div>
             ) : null}
             {status.client_queues && status.client_queues.length > 0 ? (
               <div>
-                <span className="text-muted-foreground">Client queues: </span>
+                <span className="text-muted-foreground">客户端队列：</span>
                 <span className="font-medium">{status.client_queues.join(", ")}</span>
               </div>
             ) : null}
@@ -308,7 +307,7 @@ export function SystemDiagnosticsDialog({
         {diagnostics?.checks && diagnostics.checks.length > 0 ? (
           <div className="space-y-3">
             <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
-              Subsystem Diagnostics
+              子系统诊断
             </h4>
             {diagnostics.checks.map((check: DiagnosticCheck) => {
               const meta = CHECK_LABELS[check.check];
@@ -330,7 +329,7 @@ export function SystemDiagnosticsDialog({
                       <p className="service-description">{meta?.description}</p>
                     </div>
                     <Badge variant={isOk ? "success" : isWarning ? "warning" : "destructive"} role="status">
-                      {isOk ? "OK" : isWarning ? "Not checked" : "Failed"}
+                      {isOk ? "正常" : isWarning ? "未检查" : "失败"}
                     </Badge>
                   </header>
 
@@ -344,7 +343,7 @@ export function SystemDiagnosticsDialog({
 
                   {check.recovery ? (
                     <p className="service-recovery" role="status" data-recovery={check.recovery}>
-                      <span className="service-recovery-label">Recovery</span>
+                      <span className="service-recovery-label">恢复</span>
                       {check.recovery}
                     </p>
                   ) : null}
@@ -365,21 +364,21 @@ export function SystemDiagnosticsDialog({
                 <div className="flex items-center gap-2">
                   <Power size={15} className="text-muted-foreground" aria-hidden="true" />
                   <h4 id="diagnostic-daemon" className="font-semibold text-sm">
-                    Machine daemon
+                    机器守护进程
                   </h4>
                 </div>
                 <p className="service-description">
-                  Runs the Client proxy and Server sharing for this whole machine (shaprintd).
+                  为整台机器运行客户端代理与服务器共享（shaprintd）。
                 </p>
               </div>
               <Badge variant="muted" role="status">
-                System service
+                系统服务
               </Badge>
             </header>
 
             <p className="service-detail">
-              Stopping the daemon stops printing for every user on this machine. Start it again
-              with <strong>sudo systemctl start shaprintd</strong>.
+              停止守护进程将停止这台机器上所有用户的打印。请使用
+              <strong>sudo systemctl start shaprintd</strong> 重新启动。
             </p>
 
             <div className="service-actions">
@@ -390,7 +389,7 @@ export function SystemDiagnosticsDialog({
                 disabled={daemonBusy}
                 onClick={() => void stopDaemon()}
               >
-                {daemonBusy ? "Stopping…" : "Stop ShaPrint daemon"}
+                {daemonBusy ? "停止中…" : "停止 ShaPrint 守护进程"}
               </Button>
             </div>
           </section>
@@ -410,10 +409,10 @@ export function SystemDiagnosticsDialog({
           disabled={busy !== null}
         >
           <RefreshCw size={13} className={busy ? "animate-spin" : ""} />
-          <span>Refresh All</span>
+          <span>全部刷新</span>
         </Button>
         <Button type="button" size="sm" onClick={() => onOpenChange(false)}>
-          Close
+          关闭
         </Button>
       </DialogFooter>
     </Dialog>

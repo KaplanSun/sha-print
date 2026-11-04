@@ -32,22 +32,22 @@ export function SoftwareUpdatesPanel({ updates, controlMode = "local" }: Softwar
           <div>
             <div className="flex items-center gap-2">
               <h2 id="software-updates-heading" className="text-base font-semibold leading-none">
-                Software updates
+                软件更新
               </h2>
               {status?.current_version && (
                 <Badge
                   variant={nightly ? "warning" : "muted"}
                   className="text-[10px] tracking-wide"
                 >
-                  {nightly ? "Nightly Channel" : "Stable"}
+                  {nightly ? "预发布测试版" : "稳定版"}
                 </Badge>
               )}
             </div>
             <p className="hint text-xs mt-1 text-muted-foreground">
-              Current version {status?.current_version ? `v${status.current_version}` : "installed"}.{" "}
+              当前版本 {status?.current_version ? `v${status.current_version}` : "已安装"}。{" "}
               {isMachine
-                ? "Updates are installed by your package manager."
-                : "Updates are downloaded and verified automatically."}
+                ? "更新由你的软件包管理器安装。"
+                : "更新会自动下载并校验。"}
             </p>
           </div>
         </div>
@@ -62,7 +62,7 @@ export function SoftwareUpdatesPanel({ updates, controlMode = "local" }: Softwar
                 onClick={() => void restart()}
                 className="text-xs h-8"
               >
-                {status?.waiting_for_jobs ? "Restart queued" : "Restart Now"}
+                {status?.waiting_for_jobs ? "重启已排队" : "立即重启"}
               </Button>
             ) : (
               <Button
@@ -72,14 +72,14 @@ export function SoftwareUpdatesPanel({ updates, controlMode = "local" }: Softwar
                 onClick={() => void check()}
                 disabled={checking || update?.state === "checking"}
                 className="text-xs h-8"
-                aria-label="Check for updates"
+                aria-label="检查更新"
               >
                 <RefreshCw
                   size={14}
                   className={checking || update?.state === "checking" ? "animate-spin mr-1.5" : "mr-1.5"}
                   aria-hidden="true"
                 />
-                {checking || update?.state === "checking" ? "Checking…" : "Check for updates"}
+                {checking || update?.state === "checking" ? "正在检查…" : "检查更新"}
               </Button>
             )}
           </div>
@@ -94,11 +94,9 @@ export function SoftwareUpdatesPanel({ updates, controlMode = "local" }: Softwar
 
       {isMachine ? (
         <div className="rounded-md border border-border bg-muted/40 p-2.5 text-xs space-y-1">
-          <strong className="text-foreground">Updates are installed by your package manager.</strong>
+          <strong className="text-foreground">更新由你的软件包管理器安装。</strong>
           <p className="text-muted-foreground">
-            ShaPrint is installed as a system package on this machine, so install updates the way
-            you update everything else (for example <strong>sudo dnf upgrade shaprint</strong>).
-            The package restarts the machine daemon for you.
+            ShaPrint 在这台机器上作为系统软件包安装，因此请以你更新其他软件的方式安装更新（例如 <strong>sudo dnf upgrade shaprint</strong>）。该软件包会为你重启机器守护进程。
           </p>
         </div>
       ) : null}
@@ -107,25 +105,25 @@ export function SoftwareUpdatesPanel({ updates, controlMode = "local" }: Softwar
         <div
           className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-950 dark:text-amber-200 space-y-1"
           role="region"
-          aria-label="Nightly channel notice"
+          aria-label="预发布测试版通道提示"
         >
           <div className="flex items-center gap-1.5 font-semibold text-amber-900 dark:text-amber-300">
             <FlaskConical size={14} className="shrink-0" aria-hidden="true" />
-            <span>Nightly Channel Active</span>
+            <span>已启用预发布测试版通道</span>
           </div>
           <p className="text-muted-foreground dark:text-amber-200/80 leading-relaxed text-[11px]">
-            This installation checks the dedicated nightly feed for new test builds. Fixed proxy ports and saved configurations are preserved. To return to stable, install a stable release manually.
+            此安装会检查专门的预发布测试版源以获取新的测试构建。固定的代理端口与已保存的配置会保留。要回到稳定版，请手动安装稳定版。
           </p>
         </div>
       ) : null}
 
       {isReady && !isMachine ? (
         <div className="rounded-md bg-emerald-500/10 border border-emerald-500/30 p-2.5 text-xs text-emerald-800 dark:text-emerald-200">
-          <strong>ShaPrint {update.version} is ready to install.</strong>
+          <strong>ShaPrint {update.version} 已就绪，可以安装。</strong>
           <p className="mt-0.5 text-muted-foreground">
             {status?.waiting_for_jobs
-              ? "Your restart is queued while active print jobs drain."
-              : "Restart ShaPrint to apply the latest release."}
+              ? "在活动打印任务耗尽期间，你的重启已排队。"
+              : "重启 ShaPrint 以应用最新版本。"}
           </p>
         </div>
       ) : null}
